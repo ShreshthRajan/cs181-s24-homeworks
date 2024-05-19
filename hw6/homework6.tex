@@ -1,0 +1,463 @@
+\documentclass[submit]{harvardml}
+
+\course{CS181-S24}
+\assignment{Assignment \#6}
+\duedate{11:59PM EST, April 26 2024}
+\newcommand{\attr}[1]{\textsf{#1}}
+\usepackage[OT1]{fontenc}
+\usepackage{float}
+\usepackage[colorlinks,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[pdftex]{graphicx}
+\usepackage{subfig}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{todonotes}
+\usepackage{listings}
+\usepackage{common}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{xifthen}
+\usepackage{soul}
+\usepackage{framed}
+
+\usepackage[mmddyyyy,hhmmss]{datetime}
+
+\definecolor{verbgray}{gray}{0.9}
+
+\lstnewenvironment{csv}{
+  \lstset{backgroundcolor=\color{verbgray},
+  frame=single,
+  framerule=0pt,
+  basicstyle=\ttfamily,
+  columns=fullflexible}}{}
+
+\newcommand{\mueps}{\mu_{\epsilon}}
+\newcommand{\sigeps}{\sigma_{\epsilon}}
+\newcommand{\mugam}{\mu_{\gamma}}
+\newcommand{\siggam}{\sigma_{\gamma}}
+\newcommand{\muzp}{\mu_{p}}
+\newcommand{\sigzp}{\sigma_{p}}
+\newcommand{\gauss}[3]{\frac{1}{2\pi#3}e^{-\frac{(#1-#2)^2}{2#3}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Solution environment
+\newenvironment{solution}
+  {\color{blue}\section*{Solution}}
+{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\begin{center}
+{\Large Homework 6: Inference in Graphical Models, MDPs}\\
+\end{center}
+
+\subsection*{Introduction}
+
+In this assignment, you will practice inference in graphical models as
+well as MDPs/RL.
+
+\subsection*{Resources and Submission Instructions}
+
+For readings, we recommend \href{http://incompleteideas.net/book/the-book-2nd.html}{Sutton and Barto 2018, Reinforcement Learning: An Introduction}, \href{https://harvard-ml-courses.github.io/cs181-web/}{CS181  Lecture Notes}, and Section 10 and 11 Notes.
+
+Please type your solutions after the corresponding problems using this
+\LaTeX\ template, and start each problem on a new page.
+
+Please submit the \textbf{writeup PDF to the Gradescope assignment `HW6'}. Remember to assign pages for each question.
+
+Please submit your \textbf{\LaTeX\ file and code files to the Gradescope assignment `HW6 - Supplemental'}. 
+
+You can use a \textbf{maximum of 2 late days} on this assignment.  Late days will be counted based on the latest of your submissions. 
+\\
+
+\newpage
+
+\begin{problem}[Hidden Markov Models, 15 pts]
+In this problem, you will be working with one-dimensional Kalman filters, which are \textit{continuous-state} Hidden Markov Models. Let $z_0, z_1, \cdots , z_T$ be the hidden states of the system and $x_0, x_1, \cdots, x_T$ be the observations produced. Then, state transitions and emissions of observations work as follows:
+  \begin{eqnarray*}
+    z_{t+1} &= z_{t} + \epsilon_{t} \\
+    x_{t} & = z_{t} + \gamma_{t}
+  \end{eqnarray*}
+ where $\epsilon_t \sim N(0,\sigeps^2)$ and $\gamma_t \sim N(0,\siggam^2)$. The value of the first hidden state follows the distribution $z_0 \sim N(\muzp,\sigzp^2)$.
+
+\begin{enumerate}
+  \item Draw the graphical model corresponding to the one-dimensional Kalman filter.
+  \item In this part we will walk through the derivation of the conditional distribution of $z_t|(x_0, \cdots, x_{t})$.
+  \begin{enumerate}
+      \item How does the quantity $p(z_t| x_0, \cdots, x_{t})$ relate to $\alpha_t(z_t)$ and $\beta_t(z_t)$ from the forward-backward algorithm for HMMs?  What is the operation we are performing called?
+      \item The above quantity $p(z_t|x_0, \cdots, x_t)$ is the PDF for a Normal distribution with mean $\mu_t$ and variance $\sigma_t^2$. We start our derivation of $\mu_t$ and $\sigma_t^2$ by writing:
+      \begin{align*}
+          p(z_t|x_0, \cdots, x_t) \propto p(x_t|z_t)p(z_t|x_0, \cdots x_{t-1})
+      \end{align*}
+      What is $p(x_t|z_t)$ equal to?
+      \item Suppose we are given the mean and variance of the distribution $z_{t-1}|(x_0, \cdots, x_{t-1})$ as $\mu_{t-1}$, $\sigma^2_{t-1}$. What is $p(z_t|x_0, \cdots x_{t-1})$ equal to? 
+      
+      \textbf{Hint 1}: Start by marginalizing out over $z_{t-1}$.
+      
+      \textbf{Hint 2}: You may cite the fact that 
+      \[\int N(y-x ; \mu_a, \sigma^2_a)N(x ; \mu_b, \sigma^2_b)dx = N(y ; (\mu_a + \mu_b), (\sigma^2_a + \sigma^2_b))\]
+      \item Combine your answers from parts (b) and (c) to get a final expression for $p(z_t|x_0, \cdots, x_t)$. Report the mean $\mu_t$ and variance $\sigma_t^2$ of this Normal.
+      
+      \textbf{Hint 1}: Rewrite $N(x_t; z_t, \siggam^2)$ as $N(z_t; x_t, \siggam^2)$.
+      
+      \textbf{Hint 2}: You may cite the fact that 
+      \[N(x; \mu_a, \sigma^2_a)N(x; \mu_b, \sigma^2_b) = N\left(x; \frac{\sigma^2_b}{\sigma^2_a+\sigma^2_b}\mu_a + \frac{\sigma^2_a}{\sigma^2_a+\sigma^2_b}\mu_b, \ \left(\frac{1}{\sigma^2_a} + \frac{1}{\sigma^2_b}\right)^{-1}\right)\]
+  \end{enumerate}
+  \item Interpret $\mu_t$ in terms of how it combines observations from the past with the current observation. 
+\end{enumerate}
+\end{problem}
+
+\newpage
+
+\begin{solution}
+\begin{enumerate}
+
+\item \includegraphics[width=0.5\linewidth]{hw6/prob1a.png} 
+\item 
+\begin{enumerate}
+    \item The conditional probability \( p(z_t \mid x_0, \ldots, x_t) \) is directly related to the forward algorithm through the term \( \alpha_t(z_t) \). This reflects filtering, where \( \alpha_t(z_t) \) represents the forward message, encapsulating the probability of arriving at state \( z_t \) given the sequence of observations up to time \( t \). Filtering computes the posterior distribution over the current state.
+    \item Given the relation \( x_t = z_t + \gamma_t \) where \( \gamma_t \sim N(0, \sigma_{\gamma}^2) \), the probability \( p(x_t \mid z_t) \) is characterized by a Gaussian distribution with mean \( z_t \) and variance \( \sigma_{\gamma}^2 \). This is because of the additive property of Gaussian random variables, where the sum of a Gaussian random variable and a constant retains the Gaussian nature but with the mean shifted by the constant. Therefore, the expression for \( p(x_t \mid z_t) \) is:
+
+\begin{equation*}
+p(x_t \mid z_t) = N(x_t; z_t, \sigma_{\gamma}^2)
+\end{equation*}
+
+    \item  Given the normal distribution of \( z_{t-1} \) conditional on all previous observations \( x_0, \ldots, x_{t-1} \) as \( N(\mu_{t-1}, \sigma_{t-1}^2) \), we derive \( p(z_t \mid x_0, \ldots, x_{t-1}) \) by marginalizing over \( z_{t-1} \):
+
+\begin{equation*}
+p(z_t \mid x_0, \ldots, x_{t-1}) = \int p(z_t, z_{t-1} \mid x_0, \ldots, x_{t-1}) \, dz_{t-1}.
+\end{equation*}
+
+Utilizing the chain rule of probability, I can decompose this joint probability:
+
+\begin{equation*}
+p(z_t, z_{t-1} \mid x_0, \ldots, x_{t-1}) = p(z_t \mid z_{t-1}) p(z_{t-1} \mid x_0, \ldots, x_{t-1}).
+\end{equation*}
+
+Under the Markov assumption, \( p(z_t \mid z_{t-1}) \) simplifies to \( p(z_t \mid z_{t-1}) = N(z_{t-1}, \sigma_{\epsilon}^2) \). Therefore, the conditional density function can be expressed as:
+
+\begin{equation*}
+p(z_t \mid z_{t-1}) = \frac{1}{\sqrt{2 \pi \sigma_{\epsilon}^2}} \exp\left(-\frac{(z_t - z_{t-1})^2}{2\sigma_{\epsilon}^2}\right).
+\end{equation*}
+
+Applying the convolution of two Gaussians, I obtain:
+
+\begin{equation*}
+p(z_t \mid x_0, \ldots, x_{t-1}) = N(z_t; \mu_{t-1}, \sigma_{\epsilon}^2 + \sigma_{t-1}^2),
+\end{equation*}
+
+
+\item By integrating the results from parts (b) and (c), I will derive the final expression for \( p(z_t \mid x_0, \ldots, x_t) \). Starting with the known distributions:
+
+\begin{equation*}
+p(z_{t-1} \mid x_0, \ldots, x_{t-1}) \sim N(\mu_{t-1}, \sigma_{t-1}^2),
+\end{equation*}
+
+\begin{equation*}
+p(x_t \mid z_t) \sim N(x_t; z_t, \sigma_{\gamma}^2),
+\end{equation*}
+
+and leveraging the Markov property, I can express \( p(z_t \mid x_0, \ldots, x_{t-1}) \) as a convolution of these two Gaussians. Multiplying \( p(x_t \mid z_t) \) with \( p(z_t \mid x_0, \ldots, x_{t-1}) \) and normalizing, I get a Gaussian distribution for \( p(z_t \mid x_0, \ldots, x_{t-1}) \):
+
+\begin{equation*}
+p(z_t \mid x_0, \ldots, x_{t-1}) = N\left(z_t; \frac{\sigma_{\epsilon}^2 \mu_{t-1} + \sigma_{t-1}^2 x_t}{\sigma_{\epsilon}^2 + \sigma_{t-1}^2}, \left(\frac{1}{\sigma_{\gamma}^2} + \frac{1}{\sigma_{\epsilon}^2 + \sigma_{t-1}^2}\right)^{-1}\right).
+\end{equation*}
+
+Thus, the mean \( \mu_t \) and variance \( \sigma_t^2 \) of this distribution are:
+
+\begin{equation*}
+\mu_t = \frac{\sigma_{\epsilon}^2 \mu_{t-1} + \sigma_{t-1}^2 x_t}{\sigma_{\epsilon}^2 + \sigma_{t-1}^2},
+\end{equation*}
+
+\begin{equation*}
+\sigma_t^2 = \left(\frac{1}{\sigma_{\gamma}^2} + \frac{1}{\sigma_{\epsilon}^2 + \sigma_{t-1}^2}\right)^{-1}.
+\end{equation*}
+\end{enumerate}
+
+
+\item The term \( \mu_t \) is the weighted combination of past observations and the current observation. It integrates the contribution of the current observation \( x_t \) with the influence of the past state estimate \( \mu_{t-1} \). Specifically, \( \mu_t \) is updated by considering the term:
+
+\begin{equation*}
+\frac{(\sigma_{\epsilon}^2 + \sigma_{t-1}^2)x_t}{\sigma_{\epsilon}^2 + \sigma_{t-1}^2} + \frac{\sigma_{\gamma}^2 \mu_{t-1}}{\sigma_{\gamma}^2 + \sigma_{\epsilon}^2 + \sigma_{t-1}^2},
+\end{equation*}
+
+which reflects the weighted impact of the new observation, with the weight being adjusted for the combined uncertainties of the prior state variance \( \sigma_{t-1}^2 \) and the process noise \( \sigma_{\epsilon}^2 \). The contribution of \( x_t \) is thus inversely proportional to its associated uncertainty.
+
+\( \sigma_{\gamma}^2 \mu_{t-1} \) accounts for the influence of the previous state estimate on the current update, where the observation noise variance \( \sigma_{\gamma}^2 \) quantifies the extent of reliance on the previous estimate.
+
+The denominator \( \sigma_{\gamma}^2 + \sigma_{\epsilon}^2 + \sigma_{t-1}^2 \) serves to balance the variances, normalizing the weighted average. This ensures that \( \mu_t \) accurately reflects the fusion of new data with historical information, scaling in relation to the overall variance and thus yielding a more precise estimate for the state at time \( t \).
+
+\end{enumerate}
+	
+\end{solution}
+
+\newpage
+
+\begin{problem}[Policy and Value Iteration, 15 pts]
+
+You have a robot that you wish to collect two parts in an environment
+and bring them to a goal location.  There are also parts of the
+environment that you wish the robot avoid to reduce wear on the floor.
+
+Eventually, you settle on the following way to model the environment
+as a Gridworld.  The ``states'' in Gridworld are represented by
+locations in a two-dimensional space.  Here we show each state and its
+reward:
+
+\begin{center}
+\includegraphics[width=3in]{images/gridworld.png}
+\end{center}
+
+The set of actions is \{N, S, E, W\}, which corresponds to moving north (up), south (down), east (right), and west (left) on the grid. Taking an action in Gridworld does not always succeed with probability
+$1$; instead the agent has probability $0.1$ of ``slipping'' into a
+state on either side, but not backwards.  For example, if the agent tries to move right from START, it succeeds with probability 0.8, but the agent may end up moving up or down with probability 0.1 each. Also, the agent cannot move off the edge of the grid, so moving left from START will keep the agent in the same state with probability 0.8, but also may slip up or down with probability 0.1 each. Lastly, the agent has no chance of slipping off the grid - so moving up from START results in a 0.9 chance of success with a 0.1 chance of moving right.
+
+Also, the agent does not receive the reward of a state immediately upon entry, but instead only after it takes an action at that state. For example, if the agent moves right four times (deterministically, with no chance of slipping) the rewards would be +0, +0, -50, +0, and the agent would reside in the +50 state. Regardless of what action the agent takes here, the next reward would be +50.
+
+In this problem, you will first implement policy and value iteration in this setting and discuss the policies that you find.  Next, you will interrogate whether this approach to modeling the original problem was appropriate.
+
+\end{problem}
+\newpage
+
+\begin{framed}
+\textbf{Problem 2} (cont.)\\
+
+Your job is to implement the following three methods in file \texttt{homework6.ipynb}. Please use the provided helper functions \texttt{get\_reward} and \texttt{get\_transition\_prob} to implement your solution. \emph{Do not use any outside code.  (You may still collaborate with others according to the standard collaboration policy in the syllabus.)}  
+
+\textbf{Important: } The state space is represented using integers, which range from 0 (the top left) to 19 (the bottom right). Therefore both the policy \texttt{pi} and the value function \texttt{V} are 1-dimensional arrays of length \texttt{num\_states = 20}. Your policy and value iteration methods should only implement one update step of the iteration - they will be repeatedly called by the provided \texttt{learn\_strategy} method to learn and display the optimal policy. You can change the number of iterations that your code is run and displayed by changing the $\texttt{max\_iter}$ and $\texttt{print\_every}$ parameters of the $\texttt{learn\_strategy}$ function calls at the end of the code.
+
+Note that we are doing infinite-horizon planning to maximize the expected reward of the traveling agent. For parts 1-3, set discount factor $\gamma = 0.7$.
+
+\begin{itemize}
+    \item[1a.]  Implement function \texttt{policy\_evaluation}.  Your
+      solution should learn value function $V$, either using a closed-form expression or iteratively using
+      convergence tolerance $\texttt{theta = 0.0001}$ (i.e., if
+      $V^{(t)}$ represents $V$ on the $t$-th iteration of your policy
+      evaluation procedure, then if $|V^{(t + 1)}[s] - V^{(t)}[s]|
+      \leq \theta$ for all $s$, then terminate and return $V^{(t + 1)}$.)
+      % FDV: Check for discrepancies between the staff code and the tolerance listed here -- resolved
+    \item[1b.] Implement function \texttt{update\_policy\_iteration} to update the policy \texttt{pi} given a value function \texttt{V} using \textbf{one step} of policy iteration.
+    
+    \item[1c.] Set \texttt{max\_iter = 4}, \texttt{print\_every = 1} to show the learned value function and the associated policy for the first 4 policy iterations. Do not modify the plotting code. Please fit all 4 plots onto one page of your writeup.
+    
+    \item [1d.] Set \texttt{ct = 0.01} and increase \texttt{max\_iter} such that the algorithm converges. Include a plot of the final learned value function and policy. How many iterations does it take to converge? Now try \texttt{ct = 0.001} and \texttt{ct = 0.0001}. How does this affect the number of iterations until convergence?
+      
+    \item [2a.] Implement function
+      \texttt{update\_value\_iteration}, which performs \textbf{one step} of value iteration to update \texttt{V}, \texttt{pi}.
+      
+    \item [2b.] Set \texttt{max\_iter = 4}, \texttt{print\_every = 1} to show the learned value function and the associated policy for the first 4 value iterations. Do not modify the plotting code. Please fit all 4 plots onto one page of your writeup.
+    
+    \item [2c.] Set \texttt{ct = 0.01} and increase \texttt{max\_iter} such that the algorithm converges. Include a plot of the final learned value function and policy. How many iterations does it take to converge? Now try \texttt{ct = 0.001} and \texttt{ct = 0.0001}. How does this affect the number of iterations until convergence?
+    
+    \item[3.] Compare and contrast the number of iterations, time per iteration, and overall runtime between policy iteration and value iteration. What do you notice?
+    
+    \item[4.] Plot the learned policy with each of $\gamma \in (0.6,0.7,0.8,0.9)$. Include all 4 plots in your writeup. Describe what you see and provide explanations for the differences in the observed policies. Also discuss the effect of gamma on the runtime for both policy and value iteration.
+    
+    \item[5.] Now suppose that the game ends at any state with a positive reward, i.e. it immediately transitions you to a new state with zero reward that you cannot transition away from. What do you expect the optimal policy to look like, as a function of gamma? Numerical answers are not required, intuition is sufficient.
+ 
+\end{itemize}
+\end{framed}
+
+\newpage 
+
+\begin{framed}
+\textbf{Problem 2} (cont.)\\
+
+Now you will interrogate your solution in terms of its applicability
+for the intended task of picking up two objects and bringing them to a
+goal location.
+
+\begin{itemize}
+
+  \item[6.] In this problem, we came up with a model for the problem,
+    solved it, and then we had a policy to use on the real robot.  An
+    alternative could have been to use RL on the robot to identify a
+    policy that achieved your objective.  What is the value of the
+    approach we took?  What are some limitations (in general)? 
+
+
+  \item[7.] Do any of the policies learned actually accomplish the task
+    that you desired?  What modeling shortcuts were made that result
+    in some policies matching your true objective and some not?
+
+    
+  \item[8.] Describe at least three modeling choices that were made in
+    turning your original goal into this abstract problem, and
+    potential implications of those choices.
+ 
+
+\end{itemize}
+
+\end{framed}
+
+
+\newpage 
+
+\begin{solution}
+
+
+\begin{enumerate}
+\item 
+\begin{enumerate}
+\item Programming
+\item Programming
+\item \includegraphics[width=0.5\linewidth]{hw6/prob21c.png}
+\item \includegraphics[width=0.5\linewidth]{hw6/prob21d.png} \newline
+Upon setting the convergence tolerance \( ct \) to 0.01 and progressively increasing the maximum number of iterations, I found that the policy iteration algorithm converges within 5 iterations. The corresponding final learned value function and policy are depicted above. Experimenting further with \( ct \) values of 0.001 and 0.0001, I found the convergence rate in terms of iterations remains unchanged. This indicates that the policy reaches near-optimality rapidly, by the second iteration, and subsequent value updates do not induce changes in the policy. This demonstrates the robustness at the \( ct \) to 0.01 convergence threshold.
+\end{enumerate}
+
+\item
+\begin{enumerate}
+\item Programming
+\item \includegraphics[width=0.5\linewidth]{hw6/prob22b.png}
+\item \includegraphics[width=0.5\linewidth]{hw6/prob22c.png} \newline 
+Setting the convergence tolerance \( ct \) to 0.01 and adjusting the maximum number of iterations for the value iteration algorithm, I found that it requires 25 iterations to converge. The final learned value function and policy are illustrated in the figure. 
+
+When \( ct \) is decreased to 0.001, the algorithm converges in 31 iterations. Further reducing \( ct \) to 0.0001 results in the algorithm taking 38 iterations to converge.
+
+This evidence suggests a logarithmic-like relationship between the convergence tolerance and the number of iterations required. As \( ct \) decreases, the number of iterations necessary for convergence increases in a pattern that is approximately proportional to the inverse of \( ct \). This indicates a more fine-tuned approach is needed as the convergence criterion becomes more stringent, which is expected since a lower \( ct \) demands a more precise estimate of the value function before ceasing iterations.
+
+\end{enumerate}
+
+\item \textbf{Number of Iterations:}
+Policy iteration typically converges in fewer iterations than value iteration. In policy iteration, each iteration is a two-part process: a complete policy evaluation that propagates the value information throughout the entire state space, followed by a policy improvement step. This can lead to significant and swift changes towards the optimal policy. In this analysis, I observed that subsequent iterations (iterations 2 through 5) do not significantly differ after the first iteration. Conversely, value iteration requires more iterations as it integrates both policy evaluation and improvement into a single step, necessitating additional steps to disseminate the value information and achieve convergence. For example, with a convergence tolerance of 0.01, value iteration may take 25 iterations to converge, while policy iteration may only require 5. 
+
+\textbf{Time per Iteration:}
+Policy iteration involves a longer time per iteration because it includes both policy evaluation, which is computationally intensive, and policy improvement. Value iteration tends to have faster iterations since it simplifies the process by updating the state values directly from the Bellman equation.
+
+\textbf{Overall Runtime:}
+The overall runtime for policy iteration might be extended due to its two-step nature per iteration. Nevertheless, it can potentially be quicker than value iteration if the convergence is achieved rapidly. In value iteration, while each iteration is faster, the larger number of iterations can result in a longer total runtime. The efficiency of value iteration is thereotically more significant when convergence occurs quickly, as the updates are more straightforward.
+
+\item \includegraphics[width=0.5\linewidth]{hw6/prob41.png} \includegraphics[width=0.5\linewidth]{hw6/prob42.png} I found that a larger $\gamma$ shifts the policy's preference towards considering long-term benefits. This shift is attributed to the diminishing effect of discounting on expected future rewards. In contrast, smaller $\gamma$ values emphasize immediate rewards over future gains, due to a more substantial discounting effect. As $\gamma$ increases, computed value estimates increase accordingly, because the future rewards are less discounted. This  suggests that an agent might favor actions with potentially higher future rewards despite immediate risks, under the influence of a larger $\gamma$. On the flip side, a smaller $\gamma$ engenders a policy that is inclined towards immediate and smaller rewards ie. a more conservative approach.
+
+\textbf{Impact of $\gamma$ on Convergence Speed:}
+With a higher $\gamma$, the agent's evaluation of rewards spans a more extensive horizon, potentially increasing the time of convergence due to the need for more iterative assessments to gauge long-term returns. Incremental changes in the value function associated with future rewards can cause the convergence process to extend over more iterations when $\gamma$ is larger.
+
+Also, the computational complexity per iteration, especially in the context of policy iteration, demonstrates variability. The runtime complexity of iterative policy evaluation, for instance, follows the order of $\mathcal{O}(\tilde{|S|}^2)$, as shown in the textbook.
+
+\item For high $\gamma$ values (approaching 1), the agent prioritizes future rewards almost as significantly as immediate ones. In this scenario, the agent is incentivized to seek out the state with the highest reward (R = 50), irrespective of the number of moves or the distance involved. The reason is that attaining this state ends the game with the maximum reward achievable. Consequently, the optimal policy is to navigate towards the highest reward possible, regardless of the potential penalties encountered en route, such as passing through a state with R = -10. For instance, traversing through states with R = 0 is preferable if it leads to eventually reaching the state with R = 50, as this final reward outweighs any immediate but smaller rewards such as R = 4.
+
+When $\gamma$ is low (nearing 0), the agent's strategy changes drastically, with a greater weight placed on immediate rewards due to the steep discounting of future ones. As such, the optimal policy will gravitate towards securing the closest positive reward promptly, which may entail overlooking more substantial rewards that are temporally distant. The agent is likely to choose the quickest exit from the game, favoring a smaller reward like R = 4 over a delayed yet larger reward.
+
+In the case where $\gamma$ is zero, the agent's consideration is solely for immediate rewards, disregarding their magnitude relative to other potential rewards. The resulting policy will therefore strictly aim to acquire any immediate positive reward, with no consideration for its size in comparison to other rewards that could be obtained.
+
+\item \textbf{Value of the Predefined Model Approach:}
+
+The predefined model approach offers several advantages:
+\begin{itemize}
+    \item \textbf{Predictability and safety:} Utilizing a model to simulate the environment allows for policy testing in a controlled setting. This can significantly mitigate the risk of unpredictable behavior when the policy is deployed on a real robot.
+    \item \textbf{Data requirements and efficiency:} This method does not require extensive data collection from the actual environment, which is advantageous when such data is scarce or when real-world experimentation is not feasible. Moreover, it allows for controlled testing of the environment's dynamics, particularly for corner cases that are challenging to replicate in reality.
+\end{itemize}
+
+\textbf{Limitations:}
+However, there are several limitations to this approach:
+\begin{itemize}
+    \item \textbf{Model accuracy:} If the model does not accurately capture the nuances of the real world, the resulting policy may not be effective in actual application. This discrepancy can stem from oversimplified assumptions or omissions.
+    \item \textbf{Generalizability:} Policies optimized for a specific model may not generalize well to the real-world scenario, especially when unaccounted factors or unpredictability in the environment come into play.
+    \item \textbf{Exploration restrictions:} If the model is overly restrictive, it might inhibit the exploration of potential new solutions, an aspect that direct interaction with the environment could facilitate.
+    \item \textbf{Adaptability:} A model-based approach may not adequately adapt to environmental changes. Policies derived from static models are fixed and do not evolve with changing conditions unless the model itself is revised.
+\end{itemize}
+
+\item The policies derived with $\gamma = 0.7$ effectively accomplish the task we aimed for. The robot is programmed to pick up both items (with rewards R = 4 and R = 20) and proceed to the goal state (with a reward of R = 50). 
+
+There are, however, certain shortcuts in modeling that influenced this, including:
+\begin{itemize}
+    \item The reward function did not include an explicit penalty for failing to pick up objects. This oversight shows itself in policies with higher $\gamma$ values, where the robot may overlook the items with rewards R = 4 and R = 20 and head straight to the R = 50 state, diverging from our actual goal.
+    \item The state representation was simplified; we did not account for the status of whether each object had been picked up. Additionally, our environment was depicted as a discrete space.
+\end{itemize}
+
+\item In transforming our initial goal into this abstract problem, we made several modeling choices, each with its implications:
+
+\begin{itemize}
+    \item \textbf{Discrete environment representation:} Opting for a discrete spatial model results in a reduction of granularity. Details such as the exact dimensions and contours of areas to be navigated are not captured, which may compromise the robot's ability to maneuver through confined spaces or manipulate objects with precision. This modeling choice also streamlines the action space to simple directional moves, excluding more complex real-world robotic maneuvers like angling, velocity adjustments, or nuanced object handling.
+
+    \item \textbf{Oversimplification of object interaction dynamics:} By not modeling the specifics of object interaction, such as the process of picking up an object, the model neglects the actual physical dynamics that are crucial in real-world interactions, like maintaining stability or grip on an object. The model's failure to account for potential mishaps in object retrieval results in an overly optimistic estimation of policy success.
+
+    \item \textbf{Assumptions of static environmental features:} Instead of modeling transition probabilities that vary according to dynamic factors such as floor texture, gradients, or unexpected impediments, we chose to use a static set of probabilities. This abstraction means that the policy may not be fully prepared to handle changes in the environment that affect movement, such as varied terrain or new obstacles, potentially leading to suboptimal performance when facing conditions not considered in the model.
+\end{itemize}
+\end{enumerate}
+\end{solution}
+
+
+\newpage
+
+
+\begin{problem}[Reinforcement Learning, 20 pts]
+  In 2013, the mobile game \emph{Flappy Bird} took the world by storm. You'll be developing a Q-learning agent to play a similar game, \emph{Swingy Monkey} (See Figure~\ref{fig:swingy}).  In this game, you control a monkey that is trying to swing on vines and avoid tree trunks.  You can either make him jump to a new vine, or have him swing down on the vine he's currently holding.  You get points for successfully passing tree trunks without hitting them, falling off the bottom of the screen, or jumping off the top.  There are some sources of randomness: the monkey's jumps are sometimes higher than others, the gaps in the trees vary vertically, the gravity varies from game to game, and the distances between the trees are different.  You can play the game directly by pushing a key on the keyboard to make the monkey jump.  However, your objective is to build an agent that \emph{learns} to play on its own. 
+  
+   You will need to install the \verb|pygame| module
+  (\url{http://www.pygame.org/wiki/GettingStarted}).
+  
+
+\textbf{Task:}
+Your task is to use Q-learning to find a policy for the monkey that can navigate the trees.  The \verb|homework6.ipynb| file contains starter code for setting up your learner that interacts with the game. This is the \textbf{only code file} you need to modify. At the beginning of the code, you will import the \verb|SwingyMonkey| class, which is the implementation of the game that has already been completed for you. Note that by default we have you import this class from the file \verb|SwingyMonkeyNoAnimation.py|, which allows you to speed up testing. To actually see the game animation, you can instead import from \verb|SwingyMonkey.py|. Additionally, we provide a video of the staff Q-Learner playing the game at \url{https://youtu.be/xRD6xBQbauw}.  It figures out a reasonable policy in a few iterations.
+You'll be responsible for implementing the Python function  \verb|action_callback|. The action callback will take in a dictionary that describes the current state of the game and return an action for the next time step.  This will be a binary action, where 0 means to swing downward and 1 means to jump up.  The dictionary you get for the state looks like this:
+\begin{csv}
+{ 'score': <current score>,
+  'tree': { 'dist': <pixels to next tree trunk>,
+            'top':  <height of top of tree trunk gap>,
+            'bot':  <height of bottom of tree trunk gap> },
+  'monkey': { 'vel': <current monkey y-axis speed>,
+              'top': <height of top of monkey>,
+              'bot': <height of bottom of monkey> }}
+\end{csv}
+All of the units here (except score) will be in screen pixels. Figure~\ref{fig:swingy-ann} shows these graphically. 
+Note that since the state space is very large (effectively continuous), the monkey's relative position needs to be discretized into bins. The pre-defined function \verb|discretize_state| does this for you.
+
+\textbf{Requirements}
+\\
+\textit{Code}: First, you should implement Q-learning with an
+$\epsilon$-greedy policy yourself. You can increase the performance by
+trying out different parameters for the learning rate $\alpha$,
+discount rate $\gamma$, and exploration rate $\epsilon$. \emph{Do not use outside RL code for this assignment.} Second, you should use a method of your choice to further improve the performance. This could be inferring gravity at each epoch (the gravity varies from game to game), updating the reward function, trying decaying epsilon greedy functions, changing the features in the state space, and more. One of our staff solutions got scores over 800 before the 100th epoch, but you are only expected to reach scores over 50 before the 100th epoch. {\bf Make sure to turn in your code!} \\\\
+
+\textit{Evaluation}: In 1-2 paragraphs, explain how your agent performed and what decisions you made and why. Make sure to provide evidence where necessary to explain your decisions. You must include in your write up at least one plot or table that details the performances of parameters tried (i.e. plots of score vs. epoch number for different parameters). \\\\
+
+\textit{Note}: Note that you can simply discretize the state and action spaces and run the Q-learning algorithm. There is no need to use complex models such as neural networks to solve this problem, but you may do so as a fun exercise.
+
+\end{problem}
+\begin{figure}[H]
+    \centering%
+    \subfloat[SwingyMonkey Screenshot]{%
+        \includegraphics[width=0.48\textwidth]{images/swingy}
+        \label{fig:swingy}
+    }\hfill
+    \subfloat[SwingyMonkey State]{%
+        \includegraphics[width=0.48\textwidth]{images/swingy-ann}
+        \label{fig:swingy-ann}
+    }
+    \caption{(a) Screenshot of the Swingy Monkey game.  (b) Interpretations of various pieces of the state dictionary.}
+\end{figure}
+    
+
+\begin{solution}
+
+\begin{enumerate}
+\item In this task, I aimed to construct a Q-learning agent equipped with an $\epsilon$-greedy policy to proficiently navigate through the challenges of the game \textit{Swingy Monkey}. Through meticulous experimentation with various hyperparameters, including learning rate ($\alpha$), discount factor ($\gamma$), and exploration rate ($\epsilon$), I honed in on a configuration that maximized the agent's performance.
+
+The approach involved adjusting $\alpha$ progressively towards $0.1$, enhancing the agent's policy and subsequently increasing the scores achieved, with some reaching as high as $400$ before the peak epoch. I iteratively decreased $\alpha$, which honed in on a consistent updating of Q-values, indicating that I was harnessing past knowledge while cautiously embracing new information. 
+
+Variations in $\gamma$ exhibited a subtler impact on the overall score. A $\gamma$ of $0.9$ emerged as the optimum, indicating an agent focus on the collecting of proximate and prospective rewards -- which was required given the enduring nature of the monkey's quest.
+
+In addition to hyper parameter optimization, I implemented a dynamic $\epsilon$ decay mechanism. This required extensive testing, with $\epsilon$ commencing at $1.0$ and diminishing by a factor of $0.99$ per epoch. This enabled the agent to gradually shift from exploration to exploitation. This evolution of $\epsilon$ was significant because of the intrinsic stochasticity present in the game's arboreal arrangement and the monkey's arboreal acrobatics.
+
+Lastly, I tried to implement another feature: the inference of gravity within each epoch. As the game's gravity varied, I found that identifying the optimal magnitude became really important to tailoring the agent's decisions. I iteratively tested this as well and the optimal gravity allowed for more astute action selection.
+
+In conclusion, the combination of a calibrated Q-learning algorithm, an evolved $\epsilon$-greedy strategy, and the introduction of gravity inference created an agent not only capable of surpassing the benchmark score of $50$ but also perform relatively well.
+
+\end{enumerate}
+\end{solution}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Name and Calibration
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\subsection*{Name} Shreshth Rajan
+\subsection*{Collaborators and Resources}
+Whom did you work with, and did you use any resources beyond cs181-textbook and your notes? Textbook
+
+\end{document}

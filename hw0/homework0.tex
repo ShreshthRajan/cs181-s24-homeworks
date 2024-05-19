@@ -1,4 +1,5 @@
 \documentclass{harvardml}
+\usepackage{graphicx}
 
 % Authors: 
 % Edited by: Mark Goldstein + others (jan 2018)
@@ -108,6 +109,135 @@ In this class we will be exploring the question of ``how do we model the trend i
 
 \begin{solution}
 	Your solution here.
+ \newline 1. Given the points $(x_1, y_1)$ and $(x_2, y_2)$, we have the following system of equations from the line equation $y = w_0 + w_1x$:
+
+\begin{align*}
+y_1 &= w_0 + w_1x_1 \\
+y_2 &= w_0 + w_1x_2
+\end{align*}
+
+By subtracting the first equation from the second, we can solve for $w_1$:
+
+\begin{align*}
+y_2 - y_1 &= w_0 + w_1x_2 - (w_0 + w_1x_1) \\
+y_2 - y_1 &= w_1(x_2 - x_1) \\
+w_1 &= \frac{y_2 - y_1}{x_2 - x_1}
+\end{align*}
+
+Plugging $w_1$ into the first equation to solve for $w_0$:
+
+\begin{align*}
+y_1 &= w_0 + \left(\frac{y_2 - y_1}{x_2 - x_1}\right)x_1 \\
+w_0 &= y_1 - \left(\frac{y_2 - y_1}{x_2 - x_1}\right)x_1
+\end{align*}
+
+Therefore, the coefficients that describe the line passing through the points are:
+
+\begin{align*}
+w_1 &= \frac{y_2 - y_1}{x_2 - x_1} \\
+w_0 &= y_1 - \left(\frac{y_2 - y_1}{x_2 - x_1}\right)x_1
+\end{align*}
+
+\newline 2. We can write the system of linear equations for the dataset $D = \{(x_1, y_1), (x_2, y_2)\}$ and the line equation $y = w_0 + w_1x$ in matrix notation as follows:
+
+\[
+\begin{bmatrix}
+y_1 \\
+y_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & x_1 \\
+1 & x_2
+\end{bmatrix}
+\begin{bmatrix}
+w_0 \\
+w_1
+\end{bmatrix}
+\]
+
+Where:
+\begin{itemize}
+  \item $\mathbf{y} \in \mathbb{R}^2$ is the output vector containing the $y$ values of the dataset.
+  \item $\mathbf{X} \in \mathbb{R}^{2 \times 2}$ is the matrix containing a column of ones (for the $w_0$ coefficient) and the $x$ values of the dataset (for the $w_1$ coefficient).
+  \item $\mathbf{w} \in \mathbb{R}^2$ is the vector containing the coefficients $w_0$ and $w_1$ of the line.
+\end{itemize}
+
+In terms of the given scalars, $\mathbf{X}$, $\mathbf{y}$, and $\mathbf{w}$ are defined as:
+
+\[
+\mathbf{X} = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \end{bmatrix}, \quad
+\mathbf{y} = \begin{bmatrix} y_1 \\ y_2 \end{bmatrix}, \quad
+\mathbf{w} = \begin{bmatrix} w_0 \\ w_1 \end{bmatrix}
+\]
+
+\newline 3. For a unique solution for $\mathbf{w} = (w_0 \ w_1)^T$ to exist, the matrix $\mathbf{X}$ must be invertible. This requires $\mathbf{X}$ to have full rank, meaning the rows (or columns for square matrices) are linearly independent. For our dataset $D = \{(x_1, y_1), (x_2, y_2)\}$, it is necessary that $x_1 \neq x_2$ so that the points do not lie on a vertical line.
+
+When the solution exists and is unique, the analytical form for $\mathbf{w}$ in terms of $\mathbf{X}$ and $\mathbf{y}$ is given by:
+
+\[
+\mathbf{w} = \mathbf{X}^{-1}\mathbf{y}
+\]
+
+Given that:
+
+\[
+\mathbf{X} = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \end{bmatrix}, \quad
+\mathbf{y} = \begin{bmatrix} y_1 \\ y_2 \end{bmatrix}
+\]
+
+Then:
+
+\[
+\mathbf{w} = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \end{bmatrix}^{-1} \begin{bmatrix} y_1 \\ y_2 \end{bmatrix}
+\]
+
+\newline 4. Given the matrix $\mathbf{X}$ and vector $\mathbf{y}$ from our dataset $D$:
+
+\[
+\mathbf{X} = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \end{bmatrix}, \quad \mathbf{y} = \begin{bmatrix} y_1 \\ y_2 \end{bmatrix}
+\]
+
+The determinant of $\mathbf{X}$ is:
+
+\[
+\text{det}(\mathbf{X}) = (1 \cdot x_2) - (1 \cdot x_1) = x_2 - x_1
+\]
+
+Assuming $x_1 \neq x_2$, the determinant is non-zero, and $\mathbf{X}$ is invertible. The inverse of $\mathbf{X}$ is:
+
+\[
+\mathbf{X}^{-1} = \frac{1}{x_2 - x_1}\begin{bmatrix} x_2 & -x_1 \\ -1 & 1 \end{bmatrix}
+\]
+
+Multiplying $\mathbf{X}^{-1}$ by $\mathbf{y}$ to find $\mathbf{w}$:
+
+\[
+\mathbf{w} = \mathbf{X}^{-1}\mathbf{y} = \frac{1}{x_2 - x_1}\begin{bmatrix} x_2 & -x_1 \\ -1 & 1 \end{bmatrix} \begin{bmatrix} y_1 \\ y_2 \end{bmatrix}
+\]
+
+Expanding the multiplication gives us:
+
+\[
+\mathbf{w} = \begin{bmatrix} \frac{x_2y_1 - x_1y_2}{x_2 - x_1} \\ \frac{y_2 - y_1}{x_2 - x_1} \end{bmatrix}
+\]
+
+This should match the solution found in (1), where:
+
+\[
+w_0 = y_1 - \left(\frac{y_2 - y_1}{x_2 - x_1}\right)x_1, \quad w_1 = \frac{y_2 - y_1}{x_2 - x_1}
+\]
+
+They both are the same solution, but the matrix approach is slightly more efficient in solving larger systems. This is where matrix notation becomes particularly more helpful - it's compatible with computationally intensive methods. 
+
+\ \newline 5. The analytical expression for \( \mathbf{w} \) derived in (3), which is \( \mathbf{w} = \mathbf{X}^{-1}\mathbf{y} \), assumes that \( \mathbf{X} \) is a square matrix and invertible. This isn't always true; with datasets consisting of more than two points, \( \mathbf{X} \) will generally not be square. In these cases, we use the least squares approach; we find \( \mathbf{w} \) that minimizes the sum of squared residuals. The least squares solution is given by:
+
+\[
+\mathbf{w} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}
+\]
+
+This is valid when \( \mathbf{X}^T\mathbf{X} \) is invertible.
+ 
 \end{solution}
 
 \color{black}
@@ -144,7 +274,43 @@ $$y = f(x_1, x_2) = \exp\left(-(x_1 - 2)^2 - (x_2 - 1)^2 \right)$$
 
 
 \begin{solution}
-	Your solution here.
+\newline 1. The given function is concave down (since the coefficient of \( x^2 \) is negative), indicating it has a maximum point. To find this maximum, we can differentiate \( y \) with respect to \( x \) and set the derivative to zero:
+
+\[
+\frac{dy}{dx} = -6x + 72 = 0 \Rightarrow x = 12
+\]
+
+Substituting \( x = 12 \) back into the equation gives the maximum height \( y \).
+
+Thus, Nari’s goal is achievable with a unique solution: watering the plant with 12 oz of water each week will maximize its height.
+
+\ \newline 2. First, we find the derivative of the height function with respect to \(x\):
+\[
+\frac{d}{dx}(-3x^2 + 72x + 70) = -6x + 72.
+\]
+
+Setting the derivative equal to zero gives us the critical point:
+\[
+-6x + 72 = 0 \Rightarrow x = 12.
+\]
+
+To determine if this critical point is a maximum, we use the second derivative:
+\[
+\frac{d^2}{dx^2}(-3x^2 + 72x + 70) = -6.
+\]
+
+Since the second derivative is negative, the function is concave down at \(x = 12\), indicating this is a global maximum.
+
+Therefore, Nari should water her plant 12 oz per week. At this rate, the plant's height will be:
+\[
+y = -3(12)^2 + 72(12) + 70 = -3(144) + 864 + 70 = -432 + 864 + 70 = 502 \text{ mm}.
+\]
+
+Nari's plant will grow to a maximum height of 502 mm with 12 oz of water per week.
+
+\ \newline 5. The function \(y = \exp(-(x_1 - 2)^2 - (x_2 - 1)^2)\) shows a distinct maximum within the domain \(x_1, x_2 \in (0, 6)\). This peak indicates that there exists a unique solution to Nari’s optimization problem, where \(x_1 = 2\) oz of water and \(x_2 = 1\) hour of sunlight maximize the plant's height. The nature of the function, being smooth and concave downwards towards its peak, guarantees a global maximum at this point.
+\ \newline 1. (a) 
+
 \end{solution}
 
 
@@ -183,7 +349,36 @@ For this problem, you may find the \texttt{multivariate\_normal} module from \te
 \newpage
 
 \begin{solution}
-	Your solution here.
+	\ \newline 1. (a) \includegraphics[width=0.5\linewidth]{a.png}
+        \newline (b) After sampling 500 times from the joint Bivariate Gaussian distribution of package size \(S\) and weight \(W\), and plotting a bivariate histogram, the bin with the highest frequency corresponds to approximately \(S = 120\) in\(^3\) and \(W = 4\) pounds. Given the distribution parameters, \(\mu = \begin{bmatrix} 120 \\ 4 \end{bmatrix}\) and \(\Sigma = \begin{bmatrix} 1.5 & 1 \\ 1 & 1.5 \end{bmatrix}\), the theoretical expected values for size and weight are exactly \(S = 120\) in\(^3\) and \(W = 4\) pounds. The empirical values for the most likely combination of size and weight closely match the theoretical expectations of the given Bivariate Gaussian distribution.
+        \ \newline 2. \includegraphics[width=0.5\linewidth]{b.png} The shift in the peak of the PDF for \(W\) as \(S\) changes from 118 to 122 illustrates a direct correlation: as \(S\) increases, the most likely value of \(W\) also increases. This demonstrates a positive correlation between \(S\) and \(W\), implying that larger packages tend to weigh more.
+        \ \newline 3. The Gaussian distribution is appropriate for modeling the size and weight of packages due to the Central Limit Theorem, which suggests that the sum of many independent random variables tend to be normally distributed and thus reflect the aggregation of small, independent effects on package dimensions. It may also not be appropriate for similar reasons though, particularly for extreme values (outliers). Since real-world package sizes and weights can have hard boundaries (e.g., minimum and maximum limits) or skewed distributions, these are often not captured by the symmetric Gaussian model.
+        \ \newline 4. Given \(T = 60 + 0.6W + 0.2S + \varepsilon\), where \(\varepsilon \sim N(0,5)\), \(W\) and \(S\) have a joint Gaussian distribution with means \(\mu_W = 4\), \(\mu_S = 120\), and \(\Sigma = \left[ \begin{array}{cc} 1.5 & 1 \\ 1 & 1.5 \end{array} \right]\), the expectation \(E(T)\) and variance \(Var(T)\) can be computed as follows:
+
+The expectation of \(T\) is:
+\[
+E(T) = E(60) + E(0.6W) + E(0.2S) + E(\varepsilon) = 60 + 0.6E(W) + 0.2E(S) + E(\varepsilon)
+\]
+Given \(E(W) = 4\), \(E(S) = 120\), and \(E(\varepsilon) = 0\), we get:
+\[
+E(T) = 60 + 0.6 \times 4 + 0.2 \times 120 = 60 + 2.4 + 24 = 86.4
+\]
+
+The variance of \(T\) is:
+\[
+Var(T) = Var(60) + Var(0.6W) + Var(0.2S) + Var(\varepsilon) = 0 + 0.6^2Var(W) + 0.2^2Var(S) + Var(\varepsilon)
+\]
+Given \(Var(W) = 1.5\), \(Var(S) = 1.5\), and \(Var(\varepsilon) = 5\), we find:
+\[
+Var(T) = 0.6^2 \times 1.5 + 0.2^2 \times 1.5 + 5 = 0.54 + 0.06 + 5 = 5.6
+\]
+
+Thus, \(E(T) = 86.4\) seconds and \(Var(T) = 5.6\) seconds\(^2\).
+
+\ \newline 5. see attached code 
+
+
+
 \end{solution} 
 
 

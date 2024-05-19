@@ -169,7 +169,12 @@ regressions, we will interrogate the set-up of our problem.
 
 % qwer
 \begin{solution}
-	Your solution here.
+\subsection*{1.} Since the data was derived from hard to reach Antarctic ice core samples, there was significant amount of prepossessing and processing that had to occur. There were likely corrections for incorrect data reported for negative years or extreme outlier temperatures, and time scales and measures were probably calibrates. The temperature in the column represents a global proxy, indicative of Earth's average temperature, not localized readings.
+
+\subsection*{2.} The observed periodicity in temperature data should not be looked at in a silo when confronting climate change policy. Anthropogenic influences from human activity and fossil fuels that have impacted current warming trends should also be considered, amongst many other factors. 
+
+\subsection*{3.} Interpolating temperatures for unrecorded years helps better quantify past climate trends and improve climate prediction scenarios. At core, this is what makes regression analyses so invaluable: it enables you to holistically comprehend data like long-term climate dynamics. 
+
 \end{solution}
 % rewq
 
@@ -227,7 +232,33 @@ Include your plot in your solution PDF.
 
 % qwer
 \begin{solution}
-	Your solution here.
+ \includegraphics[width=0.5\linewidth]{hw1/ss1.png}.
+\newline 1. The $\tau$ value affects the proximity of the data to the model. As in, a more fitted estimated regression is correlated to a lower $\tau$ value. We'd thus expect to get overfit with a lower $\tau$ value and underfit a high $\tau$ value. 
+\newline 2. Given the training data \(D_{\text{train}} = \{(x_n, y_n)\}_{n=1}^N\) and the test data \(D_{\text{test}} = \{(x'_m, y'_m)\}_{m=1}^M\), and defining the kernel function as \(K_\tau(x, x') = \exp\left\{-\frac{(x - x')^2}{\tau}\right\}\), the Mean Squared Error (MSE) of the kernel regressor \(f_\tau\) over the test set is expressed as:
+
+\[
+\text{MSE}(f_\tau) = \frac{1}{M} \sum_{m=1}^M \left( f_\tau(x'_m) - y'_m \right)^2
+\]
+
+where the prediction \(f_\tau(x'_m)\) for a test point \(x'_m\) is given by the weighted average of training responses:
+
+\[
+f_\tau(x'_m) = \frac{\sum_{n=1}^N K_\tau(x_n, x'_m) y_n}{\sum_{n=1}^N K_\tau(x_n, x'_m)}
+\]
+
+Here, \(K_\tau(x_n, x'_m)\) quantifies the influence of a training point \(x_n\) on the prediction at \(x'_m\), which diminishes as the distance between \(x_n\) and \(x'_m\) increases, modulated by the parameter \(\tau\).
+\newline 3. Selecting \(\tau\) by minimizing loss on \(D_{\text{test}} = D_{\text{train}}\) biases towards very small \(\tau\) values, enhancing overfitting. This practice yields a model excessively tailored to the training instances, impairing its generalizability. It's thus critical to evaluate a model's performance using separate training and testing data to get the most realistic assessment of its predictive capabilities.
+\newline 5. The space and time complexities of kernelized regression with respect to the training set size $N$ are as follows:
+
+\textbf{Space Complexity:} The model's space complexity is \textit{linear} ($O(N)$). The amount of memory required increases linearly with the number of data points $N$.
+
+\textbf{Time Complexity for Prediction:} Making a prediction involves computing the kernel function between the new input $x^*$ and each of the $N$ training points, resulting in a \textit{linear} time complexity ($O(N)$) for each prediction.
+
+\textbf{Model Size:} The size of the kernelized regression model directly correlates with the training set size, as all training data points are retained. Consequently, the model size grows linearly with $N$.
+
+\textbf{Computations for Prediction:} The number of computations required for making a single prediction scales linearly with the training set size, involving $N$ kernel evaluations and the subsequent operations to generate the prediction.
+
+
 \end{solution}
 % rewq
 
@@ -276,7 +307,28 @@ nearest-neighbors.  Recall that kNN uses a predictor of the form
 
 % qwer
 \begin{solution}
-	Your solution here.
+ \includegraphics[width=0.5\linewidth]{hw1/ss2.png}.
+1. Altering K evidently has a sizable impact on the size and shape of the graph. For smaller integer values like k=1 and k=3, the flow shape of the graph holds. When this is altered to k = n - 1, the regression appears more linear along y = - 5.5. K's role is simlar to Tao in that as you raise the value, the regression slowly becomes more linear. This makes the regressions more broad. 
+\\ \newline 2. As follows: 
+
+\textbf{Space Complexity:} \textit{Linear} ($O(N)$), attributable to the necessity of retaining the entire training dataset, thus incrementally increasing memory requirements with $N$.
+
+\textbf{Time Complexity for Prediction:} Each prediction's time complexity is also \textit{linear} ($O(N)$), due to the required computation of kernel functions across $N$ training instances for each input $x^*$.
+
+\textbf{Model Size:} Scales with $N$, as the model encapsulates all training instances for future predictions, underscoring a linear growth pattern.
+
+\textbf{Computational Load for Prediction:} Directly proportional to $N$, since there are $N$ kernel computations per prediction. 
+
+Therefore, kernelized regression. 
+
+\newline 3. The k-Nearest Neighbors (kNN) algorithm has both a linear space and time complexity (\(O(N)\)), where \(N\) is the size of the data. Specifically:
+
+\begin{itemize}
+    \item \textbf{Space Complexity:} Storing the entire training dataset mandates a \textit{linear} storage increase with \(N\).
+    \item \textbf{Time Complexity for Prediction:} We are primarily doing distance calculations to ascertain the \(k\) nearest neighbors from \(N\) training points. This is also a \textit{linear} trajectory.
+\end{itemize}
+
+This dependency underscores kNN's enhanced resource requisites for larger datasets, directly correlating the model's complexity and computational expenditure with \(N\), thereby impacting scalability and efficiency.
 \end{solution}
 % rewq
 
@@ -374,7 +426,36 @@ MSE can no longer be directly compared.
 
 % qwer
 \begin{solution}
-	Your solution here.
+1.  \includegraphics[width=0.5\linewidth]{hw1/ss3.png}.
+\newline 2. Errors: Part (a);
+
+ Train MSE: 6.28; Test MSE: 8.89
+
+
+Part (b);
+
+ Train MSE: 6.83; Test MSE: 8.94
+
+
+Part (c);
+
+ Train MSE: 4.11; Test MSE: 10.63
+
+
+Part (d);
+
+ Train MSE: 0.60; Test MSE: 73.03
+ Over fitting is when the model performs well on the training data but bad on unseen data. This happens when the model is too complex and there's significantly lower MSE for the training set compared to the test set. 
+ Under fitting is when a model is too simple to capture the underlying pattern. If the MSE is high for both sets, this might be under fitting. 
+ \newline 3. The transformer maps the original input features into a higher dimensional space where the relationship between the input and target variable may become more linear. The original relationship may be non-linear or too complex, so we can transform a non=linear regression problem into a linear problem. This improves accuracy for both training and test sets. 
+ \newline 4. \textbf{Space Complexity, Linear Regression:} The model's space requirement is $O(D)$, where $D$ is the number of features, including any basis expansions. This contrasts with ($O(N)$)for kNN and kernelized regression, which store the entire training set.  \newline \textbf{Time Complexity for Prediction,
+Linear Regression:}  Predicting with linear regression has a complexity of $O(D)$ dependent on feature count rather than training set size $N$. \newline \textbf{Model Size vs. Training Set Size $N$ Linear Regression:} Model size is fixed by the feature count $D$, not $N$, which makes it helpful as N increases and datasets scale to be larger. This makes prediction time constant regardless of $N$. \newline \textbf{Computational Comparison:} \newline kNN and Kernelized Regression: Both methods involve storing the complete training dataset, leading to increased space complexity with $N$ and linearly scaling prediction time. \newline Linear Regression: Demonstrates space efficiency and faster prediction times, particularly beneficial for datasets with a large number of instances $N$. Its primary computational demand is during the training phase, especially prominent in high-dimensional data scenarios.
+\newline 5. All three of the regression techniques excel in unique situations. kNN is particularly useful in capturing complex patterns but is more computationally expensive for large data sets. Linear regression ultimately is the most central compromise between complexity and efficiency, which makes it suitable for a wide-range of applications. 
+
+
+\newline 
+
+
 \end{solution}
 % rewq
 
@@ -431,7 +512,33 @@ $y$ are scalars, $w$ is also a scalar.
 \end{problem}
 
 \begin{solution}
-	Your solution here.
+1. To derive the optimal \(w\) for minimizing the expected squared loss \(E_{x,y}[(y - wx)^2]\), we start with:
+
+\[L(w) = E_{x,y}[(y - wx)^2]\]
+
+Expanding and minimizing \(L(w)\) leads to:
+
+\[\frac{dL(w)}{dw} = -2E_{x,y}[xy] + 2wE_{x,y}[x^2] = 0\]
+
+Solving for \(w\) yields:
+
+\[w = \frac{E_{x,y}[xy]}{E_{x,y}[x^2]}\]
+
+This expression indicates that the optimal \(w\) is a ratio of the covariance of \(x\) and \(y\) to the variance of \(x\).
+
+2. i. The unbiased and consistent estimator for \(E_{x,y}[yx]\) is given by:
+\[
+\hat{E}_{x,y}[yx] = \frac{1}{N-1} \sum_{n=1}^N (x_n - \bar{x})(y_n - \bar{y})
+\]
+where \(\bar{x}\) and \(\bar{y}\) are the sample means of \(x\) and \(y\), respectively.
+\newline ii. The estimator for \(E_{x}[x^2]\) can be directly calculated as:
+\[
+\hat{E}_{x}[x^2] = \frac{1}{N} \sum_{n=1}^N x_n^2
+\]
+3. The substitution of empirical moments makes the expression for the optimal \(w^*\) closely resembles the formula derived in Section 2.6 of the textbook, emphasizing the core principle that linear regression parameters are deeply tied to the covariance and variance of the data. \newline 4. The derivation minimizes the expected squared loss, which doesn't presuppose the joint distribution to be Gasussian. This is universally applicable. 
+
+
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
