@@ -108,6 +108,31 @@ the decision boundary. Justify your answer.
 
 \subsection*{Solution}
 
+\newpage
+
+
+1. \includegraphics[width=0.5\linewidth]{hw4/11.png}\\ The original data is linearly separable with each positive-class point above $x_2 = 0$ and negative-class point lie on $x_2 = -2$. The margin is maximized when the decision boundary is $x_2 = -1$, making the positive hyperplane is $x_2 = 0$ with the data points $(-2, +1)$, $(0, +1)$, $(2, +1)$ as support vectors, and the negative hyperplane is $x_2 = -2$ with the data points $(-1, -1)$, $(1, -1)$ as support vectors. Translations would reduce the margin from the positive and negative planes while rotations would shrink the support vectors and reduce the margins. \\
+2. To find the value of the margin, I take the perpendicular distance from any of the 3 positive-class data points $(-2, +1)$, $(0, +1)$, $(2, +1)$ or any of the 2 negative-class data points $(-1, -1)$, $(1, +1)$. This makes it 1. \\
+3. $\mathbf{w} = [0, 1]^T$\\
+4. $x_2 = -1$. I know the points $x_2 > -1$ should be positively classified and all points with $x_2 < -1$ should be negatively classified, meaning the set of all possible $(\mathbf{w}, w_0)$ is $\{ (t[0, 1]^T, t) \,|\, t \in \mathbb{R}^+ \}$. The boundary for $(x_1, -1)$  should satisfy $\mathbf{w}^T[x_1, -1]^T + w_0 = 0$ for all $x_1 \in \mathbb{R}$ or $w_1x_1 - w_2 + w_0 = 0\forall x_1 \in \mathbb{R}$.  \\
+5. \(w = [0, 1]^T\). The objective function is minimizing \(w\) when we defined the optimal decision boundary as \(\{((0, w_0)^T, w) \,|\, w \in \mathbb{R}^+\}\). In other words, we are constrained by 
+
+    \[
+    \begin{cases}
+        +1(30w + w) \geq 1 & \Rightarrow w \geq \frac{1}{31} \\
+        +1(0w + w) \geq 1 & \Rightarrow w \geq 1 \\
+        -1(-2w + w) \geq 1 & \Rightarrow w \geq 1
+    \end{cases}
+    \] \\
+6.  Combining our previous solutions, \(w_0 = 1\). This makes the discriminant function: 
+    \[
+    h(\boldsymbol{\phi}(x); \mathbf{w}, w_0) = \mathbf{w}^T(\boldsymbol{\phi}(x)) + w_0 = -\frac{8}{3}x_2 + \frac{2}{3}x_2^4 + 1
+    \] \\
+7. The discriminant function for the 5 aforementioned points on the positive and negative hyper planes is \(1, 1, 1, -1, -1\). The constraints bind with equality when the three support vectors on the positive hyperplane are \(y_ih(\boldsymbol{\phi}(x_i)) = -1 \cdot 1 = -1\) and the two on the negative are \(= -1 \cdot -1 = 1\). \\
+8. The new feature mapping $\boldsymbol{\phi}'(x) = (x, -\frac{31}{12}x^2 + \frac{7}{12}x^4)$ maintains separability as it keeps the sign consistency between classes after transformation. Since the margin is inversely proportional to the norm of $\mathbf{w}$, the comparison between the original and new margin depends on the spread of the transformed data in the feature space. This answer is dependent on whether separability is retained, but assuming it is the mapping with the larger margin would typically be preferred due to better generalization ability. The preference for $\boldsymbol{\phi}$ or $\boldsymbol{\phi}'$ hinges on which mapping yields a larger margin, as larger margins generally correlate with more robustness.
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Problem 2
@@ -203,6 +228,37 @@ The code in \texttt{homework4.ipynb} loads the images into your environment into
 
 \subsection*{Solution}
 
+%qwer 
+\newpage
+1. Plot: \includegraphics[width=0.5\linewidth]{hw4/21.png}\\
+2. Image 1: \includegraphics[width=0.5\linewidth]{hw4/22.png}\\
+3. Image 2: \includegraphics[width=0.5\linewidth]{hw4/23.png}\\
+The centroids from the K-means clustering in Part 3 are less defined than those in Part 2 largely because standardization provides an equal weight to all of the pixels irrespective of their initial variability. Pixels that lower influence (variance) now equally contribute to the calculation, which yields centroids that show the how digits are common more diffusely. \\
+4. Image 3: \includegraphics[width=0.5\linewidth]{hw4/24.png}\\
+THE HAC cluster are less crisp because the hierarchical nature of the program doesn't properly optimize for within-cluster variance, resulting in potentially more blurred means. HAC was run only once and the fact that it deterministically produce the same clusters from a given initial state, whereas K-means is non-deterministic due to random initialization and can yield different results across runs, shows it requires multiple restarts to find a 'more reasonable' local min. \\
+5. The plots show that max linkage tends to produce more balanced cluster sizes, whereas min linkage results in one disproportionately large cluster and several much smaller ones. Max linkage merges clusters based on the farthest pair of points, leading to more cohesive and similarly-sized clusters, which might help maintain the distinctness or "crispness" of the digit representations. Min linkage, on the other hand, merges the closest pair of points, which can result in one cluster aggregating most of the data points early on, leading to a large, less distinct cluster where the mean can be blurred due to the diverse range of digits being combined. This large variance within the min linkage's dominant cluster can explain the blurriness observed, as the mean image represents a wider range of digits. \\
+6. Image 4,5,6: \includegraphics[width=0.5\linewidth]{hw4/25.png} \\ \includegraphics[width=0.5\linewidth]{hw4/26.png} \\ \includegraphics[width=0.5\linewidth]{hw4/27.png} \\ By looking at the diagonals of the confusion matrices as indicators of a high degree of agreement, I find that HAC Centroid has is the most similar to K-means. This is likely due to the centroid method in HAC making decisions based on the center of clusters, which is similar to how centroids are updated in K-means. \\
+7.  (a) Clustering relies on the assumption that data points within the same group are more similar to each other than to those in other groups, which can be problematic for digit identification due to the high intra-class variability and inter-class similarity. Aligning clusters with labels presumes that each of the digit types forms a new group in the feature space, which is difficult to hold true in the case of the handwritten digits we work with. Clustering can thus generically be helpful, but may need supervised learning or labeling to be optimized. As such, clusters are incomplete without true labels, and without them the clusters don't represent meaningful classifications. \\
+(b)  Clustering can be compromised by adding adversarial examples that are designed to lie near the decision boundary of clusters or within another cluster's domain, effectively causing misclassification. This is similar to what we saw with adversarial attacks on classifiers like kNN, which involve crafting inputs that are classified incorrectly due to their proximity to decision boundaries. Unlike kNN though where attacks are with respect to specific neighbors, attacks on targets change the overall data distribution. Generative classifiers model the entire distribution of each class and are misled by such examples that take advantage of learned distributions. Clustering is thus sensitive to the data's underlying structure. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+\newpage
+
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,16 +297,71 @@ A sufficiently descriptive causal chain will include points that link the missio
 
 \subsection*{Solution}
 
+\newpage 
 
+3.  I'm not sure how to draw a graph in latex, so instead of hand-drawing it or using an alternative source I will label the following criteria according to what we discussed in class. 
 
+The updated mission emphasizes providing care to individuals in need, especially those currently underserved, while actively working to reduce healthcare disparities. The causal chain and decision-making process uses data collection, feature selection, risk assessment, and intervention strategies. 
+\newline
+
+Step 1: Re-evaluating the Use of ML in Healthcare Prediction
+
+**Decision Point (Oval):** Choice to continue using ML for healthcare predictions.
+
+- Ethical Rationale: ML can efficiently process vast amounts of data to identify at-risk individuals, potentially uncovering nuanced patterns not visible to humans.
+- Main Ethical Concern: Risk of perpetuating existing biases in the data, leading to unequal healthcare recommendations.
+- Response: Implement rigorous bias detection and mitigation techniques at every stage of the ML pipeline.
+- Moral Responsibility: Data scientists and ethicists must collaborate to ensure the algorithm's fairness. 
+\newline
+
+Step 2: Data Collection and Feature Selection
+
+**Decision Point (Oval):** Determining which data points and features to include.
+
+- Ethical Rationale: Inclusive and diverse data collection can help understand varied healthcare needs across different demographics.
+- Main Ethical Concern: Poor training can result in over-reliance on sensitive attributes (e.g., race, age). This will just reinforce stereotypes or lead to discrimination.
+- Response: Use demographic data responsibly to identify and correct disparities, not to make decisions based solely on these attributes.
+- Moral Responsibility: Data engineers and ethicists are responsible for ethical data collection and feature selection practices.
+\newline 
+
+Step 3: Definition and Assignment of Risk Scores
+
+**Decision Point (Oval):** How to calculate and utilize risk scores.
+
+- Ethical Rationale: Risk scores should accurately reflect individuals' healthcare needs to allocate resources efficiently and equitably.
+- Main Ethical Concern: A single-dimensional risk score (e.g., predicted expenditure) might not capture the complexity of healthcare needs. I will created a weighted system using different resource optimization to measure this. 
+- Response: Develop a multidimensional risk score that includes expenditure, doctor visits, diagnosis history, family history, and tailored metrics for underserved groups.
+- Moral Responsibility: ML developers and healthcare professionals need to ensure that risk scores are comprehensive and equitable.
+\newline 
+
+Step 4: Intervention Strategies Based on Risk Scores
+
+**Decision Point (Oval):** Deciding on interventions for different risk levels.
+
+- Ethical Rationale: Targeted interventions can help direct resources where they are most needed, especially to underserved populations. My ML research in high school focused on how to best target underserved populations to maximize treatment-adjusted mortality disparities, so this would be the focus of this section. 
+- Main Ethical Concern: There's a risk of resource misallocation if interventions are not carefully designed and implemented.
+- Response: Continuous evaluation and adjustment of intervention thresholds and strategies based on outcome data and feedback from healthcare professionals and patients.
+- Moral Responsibility: Healthcare administrators and policy makers are responsible for the ethical allocation of interventions.
+\newline
+
+Step 5: Outcome - Achieving the Mission
+**Outcome (Rectangle):** Reduced healthcare disparities and improved access to necessary care for underserved individuals.
+
+- Ethical Rationale: The updated rationale aims to identify and address the healthcare needs of all individuals, with special attention to historically underserved groups, thereby reducing disparities.
+- Moral Responsibility: The entire organization, led by the new CEO, is responsible for ensuring the mission's success through ethical decision-making, implementation, and continuous improvement.
+\newline
+
+Net Diagram: 
+
+As described, the causal chain shows how agents in healthcare may decide to use ML by properly aggregating data and selecting features, with the goal of ultimately reducing healthcare disparities and improving access to care. I use the same metrics as earlier with decision points marked as ovals, outcomes as rectangles, and ethical considerations highlighted at each decision point.
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Name and Calibration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection*{Name}
+\subsection*{Shreshth Rajan}
 
 \subsection*{Collaborators and Resources}
-Whom did you work with, and did you use any resources beyond cs181-textbook and your notes?
+Whom did you work with, and did you use any resources beyond cs181-textbook and your notes? I used only the textbook, OH, and course staff. 
 
 \end{document}

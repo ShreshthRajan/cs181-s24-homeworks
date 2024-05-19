@@ -18,6 +18,7 @@
 \usepackage{common}
 \usepackage{bm}
 \usepackage{tikz}
+\usetikzlibrary{bayesnet}
 \usepackage{pythonhighlight}
 \usetikzlibrary{positioning,shapes,arrows}
 
@@ -133,18 +134,133 @@ Using the~$\boldq_n$ estimates from the Expectation Step, derive an update for m
 \end{enumerate}
   
 \end{framed}
+
+\newpage 
+\textbf{Q1}
 \subsection*{Solution}
 
 \begin{enumerate}
-  \item 
-  \item 
-  \item 
+  \item Given the data likelihood for a set of observations $\{x_i\}_{i=1}^N$ and parameters $\theta$ and $\{\beta_k\}_{k=1}^K$:
+
+\begin{equation}
+    \log p(\{x_i\}_{i=1}^N; \theta, \{\beta_k\}_{k=1}^K).
+\end{equation}
+
+We introduce latent variables $\{z_i\}_{i=1}^N$ that require marginalization:
+
+\begin{equation}
+    p(\{x_i\}_{i=1}^N; \theta, \{\beta_k\}_{k=1}^K) = \sum_{i=1}^N \log \left( \sum_{k=1}^K p(x_i | z_i=k; \theta) p(z_i=k; \beta_k) \right).
+\end{equation}
+
+Direct optimization of this likelihood is not tractable because the latent variable $z_i$ is nested inside the logarithm. Differentiating through the logarithm of the sum is mathematically challenging especially in programs, making separation of terms for optimization difficult, as indicated in equation (9.3.1) (class). 
+  \item Consider a dataset \( \mathcal{D} = \{(x_i, z_i)\}_{i=1}^M \) with associated latent variables \( z_i \). The negative log likelihood of the complete data with parameters \( \phi \) and \( \{\alpha_l\}_{l=1}^L \) is given by:
+
+\begin{equation}
+    \mathcal{L}(\phi, \{\alpha_l\}_{l=1}^L) = -\log p(\mathcal{D}; \phi, \{\alpha_l\}_{l=1}^L).
+\end{equation}
+
+Applying the 'power trick' and using the indicator variable \( z_i^l \), decompose the likelihood as follows:
+
+\begin{equation}
+    \mathcal{L}(\phi, \{\alpha_l\}_{l=1}^L) = -\sum_{i=1}^M \log \left( \prod_{l=1}^L [p(x_i | z_i=l; \phi) p(z_i=l; \alpha_l)]^{z_i^l} \right).
+\end{equation}
+
+This results in a tractable optimization problem for the negative log likelihood when \( z_i \) is known:
+
+\begin{equation}
+    \mathcal{L}(\phi, \{\alpha_l\}_{l=1}^L) = -\sum_{i=1}^M \left( \sum_{l=1}^L z_i^l \log \Gamma(x_i; \alpha_l, \phi_l) \right).
+\end{equation}
+
+Through doing so, I have seperated the terms and can now continue optimization. 
+  \item Given a dataset with observations $\{y_i\}_{i=1}^M$ and fixed parameters $\phi$ and $\{\gamma_j\}_{j=1}^J$, I will express the posterior distribution $r_i$ over the hidden variables $w_i$ conditioned on $y_i$. That is,
+
+\begin{equation}
+r_i = 
+\begin{bmatrix}
+\frac{p(w_i = H_1 | y_i; \phi, \{\gamma_j\}_{j=1}^J)}{\sum_{j=1}^J p(w_i = H_j | y_i; \phi, \{\gamma_j\}_{j=1}^J)} \\
+\vdots \\
+\frac{p(w_i = H_J | y_i; \phi, \{\gamma_j\}_{j=1}^J)}{\sum_{j=1}^J p(w_i = H_j | y_i; \phi, \{\gamma_j\}_{j=1}^J)}
+\end{bmatrix}.
+\end{equation}
+
+To calculate $r_i$, first determine the conditional probability for each hidden variable state $H_j$; for any one-hot encoded $w_i$, apply Bayes' theorem:
+
+\begin{equation}
+p(w_i | y_i; \phi, \{\gamma_j\}_{j=1}^J) = \frac{p(y_i | w_i = H_j; \phi) p(w_i = H_j; \gamma_j)}{\sum_{j=1}^J p(y_i | w_i = H_j; \phi) p(w_i = H_j; \gamma_j)}.
+\end{equation}
+
+The components of the posterior vector $r_i$ sum to one, as they represent the probability distribution over the hidden categorical variables $w_i$.
   \item \begin{enumerate}
-      \item 
-      \item
-      \item 
+      \item Given the estimates from the Expectation Step, I will maximize the expected complete data log likelihood for the parameters \( \psi \) and \( \{\lambda_l\}_{l=1}^L \).
+
+Define the expected complete data log likelihood as:
+\begin{equation}
+    Q(\psi, \{\lambda_l\}_{l=1}^L) = \mathbb{E}_{Y|X, \psi, \{\lambda_l\}_{l=1}^L}[\log p(X, Y; \psi, \{\lambda_l\}_{l=1}^L)].
+\end{equation}
+
+This expectation can be rewritten using the posterior probabilities \( r_{il} \) computed in the Expectation Step:
+\begin{equation}
+    Q(\psi, \{\lambda_l\}_{l=1}^L) = \sum_{i=1}^M \sum_{l=1}^L r_{il} \log p(x_i | y_i = H_l; \psi) p(y_i = H_l; \lambda_l),
+\end{equation}
+where \( r_{il} = p(y_i = H_l | x_i; \psi, \{\lambda_l\}_{l=1}^L) \) is the posterior probability that the latent variable \( y_i \) is in state \( H_l \).
+
+This maximization step leads to updated parameter estimates for \( \psi \) and \( \{\lambda_l\}_{l=1}^L \) by optimizing the expected log likelihood.
+      \item To optimize the parameters \( \phi \) for our model, I will maximize the expected complete data log likelihood, which includes a constraint that the sum of \( \phi \) over all categories must be 1.
+
+The optimization is performed by setting the derivative of the Lagrangian to zero:
+
+\begin{equation}
+    \frac{\partial}{\partial \phi_k} \left[ \sum_{i=1}^M \sum_{j=1}^J r_{i,j} \log(\text{Gamma}(y_i; \alpha_j, \phi_j)) + \log(\phi_j) \right] + \nu \left( \sum_{j=1}^J \phi_j - 1 \right) = 0
+\end{equation}
+
+Solving for \( \phi_k \):
+
+\begin{equation}
+    -\frac{1}{\nu} \sum_{i=1}^M r_{i,k} = \phi_k
+\end{equation}
+
+Using the fact that the sum of all \( \phi_k \) is constrained to 1:
+
+\begin{equation}
+    1 = \sum_{j=1}^J \phi_j = -\frac{1}{\nu} \sum_{j=1}^J \sum_{i=1}^M r_{i,j}
+\end{equation}
+
+Therefore:
+
+\begin{equation}
+    \nu = -M
+\end{equation}
+
+And thus, the optimal \( \phi_k \) is given by:
+
+\begin{equation}
+    \phi_k = \frac{1}{M} \sum_{i=1}^M r_{i,k}
+\end{equation}
+
+This solution makes intuitive sense as it reflects the average probability of a data point belonging to class \( k \) across all observations.
+      \item Given the expected complete data log likelihood, find the parameter \( \mu_k \) that maximizes this function under the constraint that the sum of all \( \mu_k \) equals 1. Apply the derivative with respect to \( \mu_k \) and introduce a Lagrange multiplier \( \nu \) to enforce the constraint.
+
+\begin{equation}
+    \frac{\partial}{\partial \mu_k} Q(\varphi, \{\mu_l\}_{l=1}^L) = \frac{\partial}{\partial \mu_k} \left[ \sum_{i=1}^M \sum_{l=1}^L s_{i,l} \log(\text{Gamma}(y_i; \alpha, \mu_l)) + \nu \left( \sum_{l=1}^L \mu_l - 1 \right) \right] = 0
+\end{equation}
+
+Solving for \( \mu_k \):
+
+\begin{equation}
+    \frac{1}{\mu_k} \sum_{i=1}^M s_{i,k} \alpha = \sum_{i=1}^M s_{i,k} y_i
+\end{equation}
+
+Rearranging for the optimal \( \mu_k \):
+
+\begin{equation}
+    \mu_k = \frac{\sum_{i=1}^M s_{i,k} y_i}{\sum_{i=1}^M s_{i,k} \alpha}
+\end{equation}
+
+This expression aligns with the intuitive understanding that \( \mu_k \) should reflect the average behavior of data points assigned to the k-th component.
+
   \end{enumerate}
-  \item 
+  \item In a classification scenario with known labels \( w_i \) corresponding to each observation \( y_i \), we can circumvent the iterative nature of the EM algorithm. Given \( w_i \), parameter estimation simplifies by directly applying the maximization step, utilizing the relations derived for expected log likelihood. This eliminates the need for alternating between expectation and maximization steps, enabling a direct computation of model parameters.
+
 \end{enumerate}
 
 
@@ -202,41 +318,50 @@ Using the~$\boldq_n$ estimates from the Expectation Step, derive an update for m
   
 \end{problem} 
 
+\newpage
+\textbf{Q2}
 \subsection*{Solution}
 
 \begin{enumerate}
-  \item Plot:
+  \item The histogram of recovery times is a skewed distribution that's concentrated at lower values with a long right tail. This pattern suggests the presence of at least two subpopulations: one recovering quickly and another taking much longer. A mixture model, therefore, is well-suited to model this data, as it can accommodate multiple underlying distributions, each corresponding to different recovery profiles.
+ Plot: \includegraphics[width=0.5\linewidth]{hw5/1.png}
   
   \item 
 Code:
 
     \begin{python}
 def e_step(theta, betas):
-    q = 'not implemented'
+    q = ds.Gamma(alpha, betas).log_prob(x) + theta.log() 
+    q = q - q.logsumexp(dim=1, keepdim=True)
+    q = q.exp() 
     return q
 
 
 def m_step(q):
-    theta_hat = 'not implemented'
-    beta_hats = 'not implemented'
-    return theta_hat, beta_hats
-
+    theta_hat = q.mean(dim=0)
+    betas_hat = (alpha * q.sum(dim=0)) / (q * x.unsqueeze(-1)).sum(dim=0)
+    return theta_hat, betas_hat
 
 def log_px(x, theta, betas):
-    p = 'not implemented'
-    return p
+    p = torch.zeros(x.shape[0], len(betas))
+    for k in range(len(betas)):
+        gamma_dist = ds.Gamma(alpha, betas[k])
+        p[:, k] = theta[k] * gamma_dist.log_prob(x).exp()
+    return torch.log(p.sum(dim=1))
 
 
 def run_em(theta, betas, iterations=1000):
-    theta = 'not implemented'
-    betas = 'not implemented'
+   for _ in range(iterations):
+        q = e_step(theta, betas)
+        theta, betas = m_step(q)
     return theta, betas
     \end{python}
-  \item Plots:
-  \item 
-  \item 
-  \item 
-  \item
+  \item Plots: \includegraphics[width=0.5\linewidth]{hw5/2.png} \includegraphics[width=0.5\linewidth]{hw5/3.png} \includegraphics[width=0.5\linewidth]{hw5/4.png} \includegraphics[width=0.5\linewidth]{hw5/5.png}
+  The overlay plots suggest that the model with three mixture components fits the data well without overfitting, as shown by a better capture of the distribution's shape compared to one or two components and no significant improvement with four components. The choice of the number of mixtures is best guided by a balance between model complexity and goodness of fit, usually by AIC or BIC.
+  \item The recovery time data indicates a pronounced peak around 40-50 hours, suggesting a common recovery period that aligns with the expected 2-3 day timeframe. An additional, less plausible peak near zero hours prompts speculation of data entry errors or procedural cancellations, which shows the need for data cleansing measures such as filtering out these arbitrarily low values before analysis.
+  \item The data does indicate a subgroup experiencing extended recovery times, which is distinct from the primary cluster recovering within 2-3 days. With $K=3$, the parameter estimation allocates non-negligible probability to a third cluster, as reflected by the estimated mixture proportions and distinct parameter values for the third component. The presence of this third cluster, rather than a single elongated tail of the distribution, is thus influenced by the discrete nature of the additional peak in the histogram.
+  \item Yes, mixture modeling is apt for distinguishing between patient recovery profiles. This is because it employs a hidden variable, represented as \( z \), which probabilistically classifies recovery times into distinct groups. The model's ability to assign recovery times to different components based on \( \theta \) values like 16\%, 74\%, and 10\% suggests it can differentiate between varying recovery durations. Such probabilistic assignments enable the identification of patient characteristics associated with each group, offering insights into the factors affecting recovery length.
+  \item While the physicians' blood test identification for patient clusters could enhance the understanding of recovery risks, the operational use of this model may encounter obstacles. Variability within the long recovery cluster and the overlap with shorter recovery clusters could challenge how accurate length-of-stay predictions actually end up being. Also, uniform distribution across a wide range of the long recovery times might diminish the model's precision in operational planning.
 
 \end{enumerate}
 
@@ -332,14 +457,19 @@ def calc_errs(x, pcomps):
 \end{python}
 
 \begin{enumerate}
-  \item Plots:
-  \item Plots:
-  \item 
-  \item 
-  \item 
+  \item Plots: \includegraphics[width=0.5\linewidth]{hw5/6.png} The plots reveal that the principal components up to the 500th account for nearly all the variance in the dataset, indicating a steep initial decline in the eigenvalues. The cumulative variance plot approaches a value close to 1, suggesting that these components capture the essence of the data. As $k$ increases, the growth rate of the explained variance diminishes, showing that each additional component contributes less to the total variance, which is expected in principal component analysis.
+  \item Plots: \includegraphics[width=0.5\linewidth]{hw5/7.png} The principal components extracted from PCA do not resemble individual digits but rather capture the axes of maximum variance in the dataset. Unlike the distinct digit images formed by K-means cluster centers, these PCA components represent abstract features such as edges or curves common across numbers. This discrepancy illustrates the difference between identifying discrete clusters in the data (K-means) and finding orthogonal directions that maximize data variance (PCA).
+
+  \item Reconstruction error (using mean): 4.382684e+06
+        Reconstruction error (using mean and top 10 pcomps): 2.649772e+06
+        The reconstruction errors indicate PCA's ability to better encapsulate the dataset's variance compared to the mean image. Using only the mean yields a high reconstruction error of approximately \(4.38 \times 10^6\), showing a large loss of information. Incorporating the first 10 principal components reduces this error to about \(2.65 \times 10^6\), which shows PCA’s aptness for data representation. When juxtaposed with K-means, which from previous computations showed a reduction in error from \(3.45 \times 10^6\) to \(2.60 \times 10^6\) with more iterations, PCA proves to be more effective, likely because of its mechanism of capturing maximum data variance via orthogonal transformations. Despite the computational demands of PCA, the lower reconstruction errors emphasize its efficiency and make it more suitable for feature extraction and dimensionality reduction than K-means clustering.
+  \item Applying a rotation matrix \( R \) to the principal component matrix \( U \) does not alter the reconstruction error because the rotation maintains the vector norms, and thereby, the variance encapsulated by the components is unchanged. Mathematically, as rotation matrices are orthogonal, \( R^TR = RR^T = I \), which preserves the dot product, indicating that the length and hence the variance remain intact. As a result, the reconstruction error, which fundamentally relies on the magnitude of the principal components, remains unaffected.  Furthermore, while the reconstruction quality is preserved, the interpretability of individual components might differ since rotation alters the directions of the principal component axes, potentially changing their interpretability in the context of the data's inherent structure.
+
+  \item PCA, utilized for dimensionality reduction, offers advantages over clustering for classification tasks, as evidenced in Homework 3's zipcode application. Unlike clustering, which segregates data into discrete groups, PCA preserves the continuous variance in the data, allowing for a more nuanced representation. When PCA precedes classification, it emphasizes the most significant variances, which are often the most informative features, leading to improved classifier performance. In the context of attacks presented in Homework 3, PCA's ability to concentrate on major variances could potentially mitigate input-based attacks by de-emphasizing anomalies. For hardware-induced noise, PCA could facilitate separation by clustering inconsistencies into less significant components. Social engineering attacks, however, would require robust data collection strategies beyond the scope of PCA's dimensionality reduction capabilities.
+
   \item \begin{enumerate}
-      \item 
-      \item
+      \item The characteristics of penmanship described by the expert, such as line width, crispness, and ink splatter, indeed represent latent variables. These are underlying factors that are not directly observed but inferred from the data. They are intrinsic qualities that impact the observed penmanship and can potentially be uncovered by analyzing patterns within the data.
+      \item While PCA is adept at dimensionality reduction and can reveal hidden patterns in data, its application in this context may be limited. PCA focuses on the variation that explains the majority of the data, which might overlook the finer details crucial for identifying specific pen types. These subtleties, critical to an expert's analysis, could be lost if PCA overgeneralizes the data by prioritizing variance over the distinct characteristics of penmanship.
   \end{enumerate}
 \end{enumerate}
 
@@ -430,13 +560,32 @@ def calc_errs(x, pcomps):
 \subsection*{Solution}
 
 \begin{enumerate}
-  \item 
-  \item 
-  \item 
-  \item 
-  \item 
+  \item NO, they are not independent. The nodes \( \text{Weekend} \) and \( \text{Get Sleep} \) are connected through an intermediary node, say \( \text{Travel} \). Unless \( \text{Travel} \) is observed, it cannot be asserted independence between \( \text{Weekend} \) and \( \text{Get Sleep} \) due to the potential influence of \( \text{Travel} \) on both.
+  \item YES. There is independence between \( I \) and \( H \) since they are connected through other nodes, such as "Weekend" (\( T \)) and "Sick" (\( R \)), which are not observed. Due to the lack of observation of these intermediate nodes, the path between \( I \) and \( H \) can't be deemed active, thus \( I \perp H \).
+  \item NO. Observing "Eating Exotic Foods" (\( D \)) creates a dependency between two variables, say "Health" (\( H \)) and "Company" (\( C \)), since it acts as a collider, thereby allowing the flow of information between \( H \) and \( C \).
+  \item NO. The independence between \( Friends \) and \( Get Sleep \) does not hold because the path through \( Weekend \) and \( Traveling \) is unblocked, implying a dependency due to the absence of observed intermediate nodes.
+  \item YES. The observation of the node "Traveling" and "Weekend and "Get Sleep" being independent ensures conditional independence between \( having friends \) and \( weekend \) following d-separation rules.
   \item
-  \item
+  \begin{tikzpicture}
+  %  Define nodes
+  \node (weekend) at (0,0) {Weekend};
+  \node (friendsover) at (-2,-2) {Friends over};
+  \node (traveling) at (2,-2) {Traveling};
+  \node (sick) at (4,-4) {Sick};
+  \node (eatexoticfoods) at (0,-4) {Eat exotic foods};
+  \node (getsleep) at (2,-6) {Get sleep};
+
+  % Connect the nodes
+  \draw[->] (weekend) -- (friendsover);
+  \draw[->] (weekend) -- (traveling);
+  \draw[->] (traveling) -- (eatexoticfoods);
+  \draw[->] (sick) -- (eatexoticfoods); 
+  \draw[->] (sick) -- (getsleep); 
+
+  % Plates
+
+\end{tikzpicture}
+  \item Yes. Exotic foods is not observed, which means having friends over and the weekend are independent. Being sick would be dependent with having friends over if exotic foods had been observed. Sleep is a descendant of being sick, so it's independent of havng friends over. 
 \end{enumerate}
 
 \newpage
@@ -445,9 +594,9 @@ def calc_errs(x, pcomps):
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Name and Calibration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection*{Name}
+\subsection*{Name} Shreshth Rajan 
 
 \subsection*{Collaborators and Resources}
-Whom did you work with, and did you use any resources beyond cs181-textbook and your notes?
+Whom did you work with, and did you use any resources beyond cs181-textbook and your notes? OH, Peter Pich 
 
 \end{document}

@@ -186,6 +186,20 @@ Use the given code to plot the true process versus your learned models. Include 
 \end{enumerate}
 \end{framed}
 
+%qwer
+\pagebreak
+ \includegraphics[width=0.5\linewidth]{hw2/base1.png}. \includegraphics[width=0.5\linewidth]{hw2/base2.png} \includegraphics[width=0.5\linewidth]{hw2/base3.png}.
+\\\indent The variation amongst the plots illustrates the effects of using basis function of increasing complexity for linear regression. The linear basis inadequately captures the periodic nature of the observations and thereby exhibits high bias and models that are from from the true process. The inclusion of a quadratic term in the second basis significantly reduces bias, which causes both easier approximation of periodicity and increased variance among the model predictions. The third basis of terms up to $t^5$ reduces bias by closely following the true process at the cost of extremely high variance. None of the models are perfectly aligned with the true process since they can't naturally model periodic functions, which is a prime example of bias-variance trade-off where increasing complexity decreases bias. 
+\\
+\indent 3. In meta, increasing the size of the data from $N = 30$ would decrease variance for each basis since the models have a larger amount of information to learn from. In the case of the linear and quadratic bases, the bias will be minimally changes since the core problem in these models is there inability to capture the periodic nature of the true process, not the amount of data. For basis 3, I'd expect variance to decrease and potentially for bias to also reduce as the model uses the increase in data to reduce over fitting and thus identify the underlying pattern. More data lets complicated models generalize better instead fitting to noise. 
+\\
+\indent 4. i. Predicted Probability of Observation for \textit{first model} on basis 3 at t = 0.1: 51.95 \%.   At t = 3.2: 0.0007\% or \~ 0\%. 
+\newline \indent ii. Interpretation: The probability of observation at t=0.1 is approximately 51.95\%, indicating that the model predicts a slightly higher than even chance of observing the planet at this time. 
+\newline \indent  iii. Variance of classification probability at t = 0.1: 0.00340419. Variance of classification probability at t = 3.2: 0.238561. 
+\newline \indent iv. This measurement captures another source of uncertainty by capturing uncertainty from data variability. This is different than a single model's classification probability, which represents a model's inherent uncertainty about a single outcome. 
+\\\indent 5. I would use the model trained on basis 3 because it best captures the periodic nature of a planet's visibility and other complex patterns. Though it compromises on variance, the lower bias of the model enables it to better approximate the underlying process. I'd choose times like just before 6 or after 0 since, based off the graph, these are the points at which the ground truth model and the mean of learned models indicates high visibility. With regards to the alternative telescope, the existing model is likely not as applicable due to differences in atmospheric conditions, light pollution, and other visibility factors. This may require re calibration with data from a new location or additional variables. With regards to the new dataset, there is a greater amount of observations (ie. the first three values). The alternate dataset could be from different conditions or sensitivity, which makes planet detection more likely during such times. The location of the telescope, atmospheric conditions, and equipment all play a role in this. A new model with these additional factors and potentially new variables or greater sensitivity to nuanced changes.  It is reasonable to retrain the models since doing so enables you to adapt to the new conditions and potentially integrate both observation sets (improving accuracy). The weather has a critical impact since knowing the weather conditions in advance can help in scheduling observation times when clear skies are expected, thus improving the chances of successful planet observation.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Problem 2
@@ -263,6 +277,44 @@ $\boldX^{-\top} := (\boldX^{\top})^{-1}$
  \end{align*}
  \end{problem}
 
+%qwer
+\pagebreak
+\indent 1. The log likelihood of the dataset is the sum of the log likelihood of each individual data point: $\ln p(D; \pi) = \sum_{i} \ln p(x_i, y_i; \pi)$. The data points are independent, so the log-likelihood of each data point can be represented as $\ln p(x_i, y_i; \pi) = \ln p(x_i|y_i; \pi) + \ln p(y_i; \pi)$. We know the given class prior is $p(y = C_k; \pi) = \pi_k$, so the log-likelihood of the class prior is: $\ln p(y_i; \pi) = \ln \pi_{y_i}$. The class-conditional density of features \(x\) for class \(C_k\) is denoted as \(p(x|y = C_k)\), so the log-likelihood of the class-conditional density is:$\ln p(x_i|y_i; \pi) = \ln p(x_i|y_i = C_k; \pi) = \ln p(x_i|C_k; \pi)$. Therefore, the log-likelihood of the dataset \(D\) is:$\ln p(D; \pi) = \sum_{i} (\ln p(x_i|C_k; \pi) + \ln \pi_{y_i})$.
+\\\indent 2. Given the constraint, I introduce a lagrange multiplier $\lambda$ and construct the Lagrangian function \(L(\pi, \lambda)\):
+\[
+L(\pi, \lambda) = \sum_{i=1}^n \sum_{k=1}^K y_{ik} (\ln p(x_i|C_k) + \ln \pi_k) + \lambda \left(\sum_{k=1}^K \pi_k - 1\right)
+\]. To find the max-likelihood estimator, I solve \[
+\frac{\partial L}{\partial \pi_k} = 0 \quad \text{and} \quad \frac{\partial L}{\partial \lambda} = 0
+\]. The derivative yields \[
+\sum_{i=1}^n \frac{y_{ik}}{\pi_k} + \lambda = 0
+\]. Multiplying both sides and summing over all $k$ with the constraint \(\sum_{k=1}^K \pi_k = 1\), I get \[
+\sum_{k=1}^K \sum_{i=1}^n y_{ik} + \lambda \sum_{k=1}^K \pi_k = 0 \Rightarrow n + \lambda = 0
+\]. We solve for $\lambda$ and find $\lambda = -n$. Substituting back, $\hat{\pi}_k = \frac{1}{n} \sum_{i=1}^n y_{ik}$. 
+
+This is intuitive because maximizing the log-likelihood function to the constrain ensures that the prior class-membership probabilities are the most likely. This still, though, satisfies the constraint that the probabilities sum to 1. This means that it properly represents the empirical class distribution of the set. 
+
+\indent 3. Given the class conditional probability, the log-likelihood for data belonging belonging to the class can be expressed as. \[
+\ln p(D; \mu_k) = -\frac{1}{2} \sum_{i: y_i = C_k} (x_i - \mu_k)^\top \Sigma^{-1} (x_i - \mu_k)
+\]
+Taking the derivative of this expression with respect to \(\mu_k\), we get:
+\[
+\frac{\partial}{\partial \mu_k} \ln p(D; \mu_k) = \Sigma^{-1} \sum_{i: y_i = C_k} (x_i - \mu_k)
+\]
+\\\indent 4. Setting the gradient from above equal to 0 and solving yields the following estimate: \[
+\hat{\mu}_k = \frac{1}{N_k} \sum_{i: y_i = C_k} x_i
+\]
+Here \(N_k\) is the number of data points belonging to class \(C_k\). This is intuitive because it's the mean of all the data points (thus the central point of their distribution). 
+\\\indent 5.  The log-likelihood for the Gaussian distribution and its dependence on \(\Sigma\) can be expressed as:
+\[
+\ln p(D; \Sigma) = -\frac{n}{2} \ln |\Sigma| - \frac{1}{2} \sum_{i=1}^n (x_i - \mu_{y_i})^\top \Sigma^{-1} (x_i - \mu_{y_i})
+\]
+Taking the derivative with respect to \(\Sigma\), we get:
+\[
+\frac{\partial}{\partial \Sigma} \ln p(D; \Sigma) = -\frac{n}{2} \Sigma^{-1} + \frac{1}{2} \Sigma^{-1} \left(\sum_{i=1}^n (x_i - \mu_{y_i})(x_i - \mu_{y_i})^\top\right) \Sigma^{-1}
+\]
+\\\indent 6. Setting part 5 equal to 0 and solving yields the following estimate: \[
+\hat{\Sigma} = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_{y_i})(x_i - \mu_{y_i})^\top
+\]. This is intuitive since it represents the avg of the outer product of the deviations from each class mean and thus shows the spread of the data around class means. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Problem 3
@@ -319,13 +371,22 @@ After implementing the above classifiers, complete the following exercises:
 \end{enumerate}
 \end{problem}
 
+\pagebreak
+\indent 1. \includegraphics[width=0.5\linewidth]{hw2/softmax.png}. \\ The boundaries are similar in that each tries to minimize classification errors on the training data. In the case of linear classifiers like softmax and linear generative classifiers, the bounds are straight lines. Softmax assumes that assumes the probabilities of the classes can be expressed as a linear function of the input features in the log space. This assumption leads to linear decision boundaries in the feature space. The input features like magnitude and temperature and class probabilities are modeled via a linear function.  Unlike generative models that assume specific distributions for the input features conditioned on the class labels like a Gaussian distribution, softmax' decision bounds are based purely off of the data's arrangement in the feature space. The additional inclusion of L2 regularization encourages models that are less likely to overfit, which affects the positioning of the decision boundaries. 
+
+\indent 2. GaussGenNoteShared: Star will be Dwarf
+GausGenShared: Star will be dwarf
+SoftMax: Star will be Dwarf BasisModel: Star will be giant
+KnnI: Star will be dwarf
+Knn5: Star will be dwarf
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Name and Calibration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Name}
 
 \subsection*{Collaborators and Resources}
-Whom did you work with, and did you use any resources beyond cs181-textbook and your notes?
+Whom did you work with, and did you use any resources beyond cs181-textbook and your notes? N/A 
 
 
 \end{document}

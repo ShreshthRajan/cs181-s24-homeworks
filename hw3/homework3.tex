@@ -242,41 +242,90 @@ given by
 \begin{answer}
   \begin{enumerate}
     \item[1.]
-      Answer:
+      Answer: 
       \[
-        \arg \max_{\theta} \log p(Y = y \mid \theta) =
+        \arg \max_{\theta} \log p(Y = y \mid \theta) = \theta = \frac{y}{N} 
       \]
-      Derivation:
+      Derivation:  Given the setup, we have a Beta-Binomial conjugacy with the likelihood function for observing $y$ heads out of $N$ coin flips described by the binomial distribution:
+
+\[ p(Y = y | \theta) = \binom{N}{y} \theta^y (1 - \theta)^{N-y} \]
+
+The goal is to find the maximum likelihood estimate (MLE) of $\theta$, the probability of observing a head, given the observations. The MLE is found by maximizing the log-likelihood function:
+
+\[ \log p(Y = y | \theta) = \log \left( \binom{N}{y} \right) + y \log(\theta) + (N - y) \log(1 - \theta) \]
+
+To find the value of $\theta$ that maximizes this log-likelihood, we take its derivative with respect to $\theta$ and set it equal to zero:
+
+\[ \frac{d}{d\theta} \left( y \log(\theta) + (N - y) \log(1 - \theta) \right) = \frac{y}{\theta} - \frac{N - y}{1 - \theta} = 0 \]
+
+Solving for $\theta$, we get:
+
+\[ \frac{y}{\theta} = \frac{N - y}{1 - \theta} \]
+
+\[ y(1 - \theta) = \theta(N - y) \]
+
+\[ y - y\theta = \theta N - \theta y \]
+
+\[ y = \theta N \]
+
+\[ \theta = \frac{y}{N} \]
+
+Therefore, the MLE for $\theta$ is $\frac{y}{N}$.
+
 
     \item[2.]
       \begin{enumerate}
-        \item
+        \item Based off the plot, the Beta distribution is characterized by two parameters, \(\alpha\) and \(\beta\), which influence its shape: \\
+- When \(\alpha = \beta\), the distribution is symmetric about 0.5.\\
+- If \(\alpha > \beta\), the distribution skews towards 1, and if \(\alpha < \beta\), it skews towards 0. \\
+- For \(\alpha, \beta > 1\), the PDF is concentrated around its mean, while for \(\alpha < 1\) or \(\beta < 1\), it is more concentrated near 0 or 1, respectively.\\
+- Notably, Beta(1, 1) is equivalent to the uniform distribution over the interval [0, 1], showing a flat probability across all outcomes.\\
+The Beta distribution's diversity in shapes allows it to be versatile in modeling probabilities that vary between 0 and 1.
+
 
         \item
 
               Parameters:
               \[
-                \alpha' =
+                \alpha' = y + \alpha\
               \]
 
               \[
-                \beta' =
+                \beta' = N - y + \beta\
               \]
 
-              Derivation:
+              Derivation: 
+Given a Binomial likelihood with \(Y = y\) successes out of \(N\) trials, and a probability of success \(\theta\), the likelihood function is:
+
+\[ p(Y = y | \theta) = \binom{N}{y} \theta^y (1 - \theta)^{N-y} \]
+
+Adopting a Beta distribution as the prior for \(\theta\), \( p(\theta) = Beta(\alpha, \beta) \), gives:
+
+\[ p(\theta) \propto \theta^{\alpha-1} (1 - \theta)^{\beta-1} \]
+
+The posterior distribution is the product of these likelihood and prior distributions, proportional to:
+
+\[ p(\theta | Y = y) \propto \theta^y (1 - \theta)^{N-y} \cdot \theta^{\alpha-1} (1 - \theta)^{\beta-1} \]
+
+\[ \propto \theta^{y+\alpha-1} (1 - \theta)^{N-y+\beta-1} \]
+
+This formulation shows that the posterior is also a Beta distribution, specifically \(Beta(y + \alpha, N - y + \beta)\). Thus, the Beta distribution is a conjugate prior for the Binomial distribution, allowing for straightforward Bayesian updating of beliefs about \(\theta\) in light of new data.
+
+\textit{Conclusion:} The posterior distribution, given the Binomial likelihood and a Beta prior, remains within the Beta distribution family, with updated parameters \(\alpha' = y + \alpha\) and \(\beta' = N - y + \beta\). This illustrates the principle of conjugacy, facilitating analytical Bayesian inference.
+
 
       \end{enumerate}
 
     \item[3.]
 
       \begin{enumerate}
-        \item
+        \item Posterior point estimates simplify Bayesian analysis by providing a singular value representation of the distribution. However, they can obscure the underlying uncertainty and distribution characteristics. Specifically, for a Beta-Binomial conjugate pair with parameters \(\alpha, \beta < 1\), the distribution tends towards 0 and 1, making central tendency measures like the mean potentially misleading, as they might not capture the distribution's bimodal nature. In contrast, the MAP estimate may overlook the distribution's breadth, focusing on the most probable value without indicating the distribution's spread or multi-modality.
 
         \item
               \begin{align*}
-                \theta_{\text{post mean}} = \mean [\theta \mid Y = y]     & = \\
-                \theta_{\text{MAP}} =\arg \max_{\theta}p(\theta \mid Y=y) & = \\
-                \mathrm{Var}(\theta \mid Y = y)                           & =
+                \theta_{\text{post mean}} = \mean [\theta \mid Y = y]     & = \frac{y + \alpha}{N + \alpha + \beta}  \\
+                \theta_{\text{MAP}} =\arg \max_{\theta}p(\theta \mid Y=y) & = \frac{y + \alpha - 1}{N + \alpha + \beta - 2} \\
+                \mathrm{Var}(\theta \mid Y = y)                           & =  \frac{(y + \alpha) (N - y + \beta)}{(N + \alpha + \beta)^2 (N + \alpha + \beta + 1)} \\
               \end{align*}
 
       \end{enumerate}
@@ -284,15 +333,14 @@ given by
     \item[4.]
 
       \begin{enumerate}
-        \item
+        \item In examining the MAP estimate, the roles of \(\alpha\) (alpha) and \(\beta\) (beta) are pivotal. An increase in \(\alpha\) skews the MAP towards favoring heads by weighting the numerator of the MAP's formula more heavily. Conversely, a boost in \(\beta\) tilts the scale towards tails by amplifying the denominator's influence, leading to a preference for tails in the MAP's positioning. A scenario where \(\alpha\) and \(\beta\) are both elevated and nearly equal nudges the MAP towards the midpoint, symbolizing an unbiased coin. For a neutral stances in which neither heads or tails is predisposed, setting \(\alpha = \beta = 1\) crafts a uniform prior distribution, perfectly encapsulating the essence of a fair coin.
+
 
         \item
               \begin{enumerate}
-                \item
-
-                \item
-
-                \item
+                \item The variance of the prior, articulated through \(\frac{\alpha^2}{(2\alpha)^2(2\alpha+1)}\), is different than the posterior's variance, which integrates observational data into its formula: \(\frac{(y+\alpha)(N-y+\alpha)}{(N+2\alpha)^2(N+2\alpha+1)}\). This comparison shows how the posterior variance, since it includes \(y\) and \(N\), refines the uncertainty around \(\theta\) post-observation, highlighting the essence of Bayesian updating.
+                \item The dispersion that's in the prior's variance shows how intense our prior convictions are.  A constrained variance signals a strong belief in the prior's central tendency, while an expanded variance shows a more tentative stance ie. a greater uncertainty about the prior's mean.
+                \item Notably, as the dataset expands with more samples (\(N\)), the posterior variance systematically contracts, which means we approach the point of peak uncertainty in our estimate of \(\theta\). This highlights the premise behind the Bayesian mathematics: increasing data volume solidifies our probabilistic assessment of outcomes.
               \end{enumerate}
 
       \end{enumerate}
@@ -303,26 +351,43 @@ given by
         \item
               MSE term:
               \[
-                M =
+                M = (y - \hat{y})^2
               \]
 
               Regularization term:
               \[
-                R =
+                R = (R = -(a - 1)\theta + \frac{b}{2}\theta^2
               \]
 
               Loss function, as a function of the MSE and regularization term:
               \[
-                \ell(\theta) =
+                \ell(\theta) = (y - \theta)^2 - (a - 1)\theta + \frac{b}{2}\theta^2
               \]
 
-              MSE term derivation:
+              MSE term derivation: From the MSE term, we see that \(\theta = \hat{y}\), so \(\hat{y} = y\), leading to \(M = (y - \theta)^2\).
 
-              Regularization term derivation:
+              Regularization term derivation: We start with our current form of the MSE, \(-(a - 1)\theta + \frac{(y - \theta)^2}{2N}\), and seek to differentiate it with respect to \(\theta\) and set it to zero to find the MAP estimate:
 
-              Regularization term interpretation:
+\[
+\frac{\partial}{\partial \theta}\left(-(a - 1)\theta + \frac{(y - \theta)^2}{2N}\right) = 0
+\]
 
-        \item
+This leads to the equation:
+\[
+-(a - 1) + \frac{y - \theta}{N} = 0
+\]
+
+Solving this provides us with the values of \(\theta\) that minimize the loss function.
+
+
+              Regularization term interpretation: By completing the square for the regularization term, we can interpret its contribution as incorporating prior beliefs into the estimation process, effectively adjusting the loss function to favor values of \(\theta\) that are consistent with prior knowledge. The completed square form aligns the regularization term with the prior distribution's mode, which lets us link the regularization in the loss function and Bayesian prior information.
+        \item As \(n\) approaches infinity, both the posterior mean and the MAP estimate converge towards the MLE estimate. This convergence is due to the diminishing influence of the prior as more data is observed, which reinforces the alignment between Bayesian posterior estimates and Frequentist approaches with sufficient data.
+
+\[
+\lim_{n \rightarrow \infty} \theta_{\text{post mean}} = \lim_{n \rightarrow \infty} \theta_{\text{MAP}} = \theta_{\text{MLE}} = y
+\]
+
+This shows how wide ranging Bayesian inference truly is, particularly in how posterior estimates integrate prior knowledge and observed data to  approach the frequentist MLE (as data increases). 
 
       \end{enumerate}
 
@@ -459,14 +524,14 @@ where $\hat{y}$ is a scalar output of the net when passing in the single datapoi
 \begin{answer}
   \begin{enumerate}
     \item \begin{itemize}
-            \item $\bold{W}_1 : $
-            \item $\bold{b}_1 : $
-            \item $\bold{W}_2 : $
-            \item $\bold{b}_2 : $
-            \item $\bold{a}_1 : $
-            \item $\bold{z}_1 : $
-            \item $a_2 : $
-            \item $\hat{y} : $
+            \item $\bold{W}_1 : H \times M$
+            \item $\bold{b}_1 : H \times 1$
+            \item $\bold{W}_2 : 1 \times H$
+            \item $\bold{b}_2 : 1 \times 1$
+            \item $\bold{a}_1 : H \times N$
+            \item $\bold{z}_1 : H \times N$
+            \item $a_2 : 1 \times N$
+            \item $\hat{y} : 1 \times N$
           \end{itemize}
 
     \item \begin{enumerate}
@@ -475,22 +540,28 @@ where $\hat{y}$ is a scalar output of the net when passing in the single datapoi
                     % \frac {\partial L} {\partial \hat{y}} &= \frac y {\hat{y}} + \frac {1-y} {\hat{y} - 1} \\ 
                     % \frac {\partial  \hat{y}} {\partial z_2} &= \sigma (z_2) (1 - \sigma(z_2)) \\
                     % \frac {\partial z_2} {\partial b_2} &= 1 \\
-                    \frac {\partial L}{\partial b_2} & =
+                    \frac {\partial L}{\partial b_2} & = -\left( \frac{y}{\hat{y}} \frac{\partial \hat{y}}{\partial b_2} + \frac{1-y}{1-\hat{y}} \frac{\partial \hat{y}}{\partial b_2} \right) \\
+&= -\left( \frac{y - \hat{y}}{\hat{y}(1 - \hat{y})} \right) \frac{\partial \hat{y}}{\partial b_2} \\
+&= -\left( \frac{y}{\hat{y}} - \frac{1-y}{1-\hat{y}} \right) \sigma(W_2 z_1 + b_2) \cdot (1 - \sigma(W_2 z_1 + b_2))
                   \end{align*}
 
             \item
                   \begin{align*}
-                    \frac {\partial L}{\partial W_2^h} & =
+                    \frac{\partial L}{\partial W_{2h}} &= -\left( \frac{y}{\hat{y}} \frac{\partial \hat{y}}{\partial W_{2h}} + \frac{1 - y}{1 - \hat{y}} \frac{\partial \hat{y}}{\partial W_{2h}} \right) \\
+&= -\left( \frac{y}{\hat{y}} - \frac{1 - y}{1 - \hat{y}} \right) \sigma(W_{2}z_{1} + b_{2}) \cdot (1 - \sigma(W_{2}z_{1} + b_{2})) \cdot Z_{1}^{h}
                   \end{align*}
 
             \item
                   \begin{align*}
-                    \frac {\partial L}{\partial b_1^h} & =
+                    \frac {\partial L}{\partial b_1^h} & = -\left( \frac{y}{\hat{y}} \frac{\partial \hat{y}}{\partial b^{1}_{h}} + \frac{1-y}{1-\hat{y}} \frac{\partial \hat{y}}{\partial b^{1}_{h}} \right) \\
+&= -\left( y - (1-y) \right) \frac{\partial \hat{y}}{\partial b^{1}_{h}} \\
+&= -\left( \frac{y}{\hat{y}} - \frac{1 - y}{1 - \hat{y}} \right) \sigma(a_2) (1 - \sigma(a_2)) \cdot W^{2} \cdot \sigma(a_1) (1 - \sigma(a_1))
                   \end{align*}
 
             \item
                   \begin{align*}
-                    \frac {\partial L}{\partial W_1^{h,j}} & =
+                    \frac {\partial L}{\partial W_1^{h,j}} & = \frac{\partial L}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial a_2} \cdot \frac{\partial a_2}{\partial z_1} \cdot \frac{\partial z_1}{\partial a_1} \cdot \frac{\partial a_1}{\partial W^{1}_{h,j}} \\
+&= -\left( \frac{y}{\hat{y}} - \frac{1 - y}{1 - \hat{y}} \right) \cdot \sigma(a_2) (1 - \sigma(a_2)) \cdot W_2^h \cdot \sigma(a_1)(1 - \sigma(a_1)) \cdot x_j
                   \end{align*}
           \end{enumerate}
 
@@ -499,26 +570,26 @@ where $\hat{y}$ is a scalar output of the net when passing in the single datapoi
           \begin{enumerate}
             \item
                   \begin{align*}
-                    v_1        & = \\
-                    v_2        & = \\
-                    v_3        & = \\
-                    v_4        & = \\
-                    v_5        & = \\
-                    v_6        & = \\
-                    v_7        & = \\
-                    f(x_1,x_2) & = \\
+                   v_1 &= \frac{\pi}{6} \\
+v_2 &= \sin\left(\frac{\pi}{6}\right) = \frac{1}{2} \\
+v_3 &= \ln\left(\frac{1}{2}\right) \\
+v_4 &= 1 \\
+v_5 &= e^{1} = e \\
+v_6 &= v_1 \cdot v_5 = \frac{\pi}{6} e \\
+v_7 &= v_3 + v_6 = \ln\left(\frac{1}{2}\right) + e*\frac{\pi}{6} \\
+f(x_1, x_2) & = v_3 + v_6 = \ln\left(\frac{1}{2}\right) + \frac{\pi}{6} \cdot e \approx 0.730 \\
                   \end{align*}
 
             \item
                   \begin{align*}
-                    \frac{\partial v_1}{\partial x_1} & = \\
-                    \frac{\partial v_2}{\partial x_1} & = \\
-                    \frac{\partial v_3}{\partial x_1} & = \\
-                    \frac{\partial v_4}{\partial x_1} & = \\
-                    \frac{\partial v_5}{\partial x_1} & = \\
-                    \frac{\partial v_6}{\partial x_1} & = \\
-                    \frac{\partial v_7}{\partial x_1} & = \\
-                    \frac{\partial f}{\partial x_1}   & =
+\frac{\partial v_1}{\partial x_1} &= 1 \\
+\frac{\partial v_2}{\partial x_1} &= \cos(v_1) = \cos\left(\frac{\pi}{6}\right) \\
+\frac{\partial v_3}{\partial x_1} &= \frac{1}{v_2} \cdot \frac{\partial v_2}{\partial x_1} = -\frac{1}{2\sin(v_1)} \cdot \frac{\sqrt{3}}{2} \\
+\frac{\partial v_4}{\partial x_1} &= 0 \\
+\frac{\partial v_5}{\partial x_1} &= 0 \\
+\frac{\partial v_6}{\partial x_1} &= v_5 = e^{\exp(x_2)} = e \\
+\frac{\partial v_7}{\partial x_1} &= \frac{1}{v_2} \cdot \frac{\partial v_3}{\partial x_1} + v_5 = -\frac{1}{2\sin(v_1)} \cdot \frac{\sqrt{3}}{2} + e \\
+\frac{\partial f}{\partial x_1} &= \frac{1}{v_2} \cdot \frac{\partial v_3}{\partial x_1} + v_5 = -\frac{1}{2\sin(v_1)} \cdot \frac{\sqrt{3}}{2} + e = -\frac{1}{2\sin\left(\frac{\pi}{6}\right)} \cdot \frac{\sqrt{3}}{2} + e
                   \end{align*}
           \end{enumerate}
 
@@ -594,72 +665,145 @@ In this problem, you will learn how to use PyTorch. This machine learning librar
   \begin{enumerate}
     \item[1.]
 
-      Plot:
+      Plot: \includegraphics[width=0.5\linewidth]{hw3/ss1.png}
 
       % \includegraphics[width=\linewidth]{final_plot}
 
       Code:
 
       \begin{lstlisting}[language=Python]
-n_inputs = 'not implemented'
-n_hiddens = 'not implemented'
-n_outputs = 'not implemented'
+n_inputs = 784
+n_hiddens = 256
+n_outputs = 10
 
-W1 = 'not implemented'
-b1 = 'not implemented'
-W2 = 'not implemented'
-b2 = 'not implemented'
+W1 = torch.nn.Parameter(.01*torch.randn(size=(n_inputs, n_hiddens)))
+b1 = torch.zeros(size=(1, n_hiddens), requires_grad=True)
+W2 = torch.nn.Parameter(.01*torch.randn(size=(n_hiddens, n_outputs), requires_grad = True))
+b2 = torch.zeros(size=(1, n_outputs), requires_grad=True)
 
 
 
 def relu(x):
-    'not implemented'
+  """
+  For each element, set 0 as minimum value and nothing as maximum value. S
+  hould not change shape of x.
 
+  :param x: a 2D numpy array of output of first transformation. Shape is (batch_size, n_hiddens)
+  :return: a 2D numpy array of output of first non-linearity. Shape is (batch_size, n_hiddens)
+  """
+  
+  maxV = torch.max(torch.tensor(0), x) 
+  return(maxV)
 
+def softmax(X):
+  
+  """
+  For each row, divide each exponentiated element by the sum of all exponentiated elements in that row. 
+  Should not change shape of X.
 
-def softmax(x):
-    'not implemented'
+  :param X: a 2D numpy array of output of second transformation. Shape is (batch_size, n_outputs)
+  :return: a 2D numpy array of output of second non-linearity. Shape is (batch_size, n_outputs)
+  """
+  num = torch.exp(X)
+  denom = torch.sum(num, dim=1, keepdim=True) 
+  SMDiv = num/denom
+  return (SMDiv)
+
 
 
 
 def net(X):
+  flatX = X.flatten(start_dim=1)
+  a1 = flatX@W1 + b1
+  h1 = relu(a1)
+  a2 = h1@W2 + b2
+  h2 = softmax(a2)
+  return (h2)
+  
+  """
+  Implements the forward pass of our neural network. 
+  
+  :param X: a batch of images of shape (batch_size, 1, 28, 28).
+  :return: a 2D numpy array of shape (batch_size, 10) where each row is a probability vector of length 10.
+  """
+  
   'not implemented'
 
 
 
 def cross_entropy(y_hat, y):
-  'not implemented'
+  """
+  Implement cross entropy loss as defined in the formula above.
+  :param y_hat: a 2D numpy array of shape (batch_size, 10) where each row is a probability vector of length 10.
+  :param y: a 1D numpy array of shape (batch_size) where each element is a label.
 
+  :return: a 1D numpy array of shape (batch_size) representing the cross entropy losses.
+  """
 
+  EntLoss = -torch.log(y_hat[range(len(y_hat)),y])
+  return (EntLoss)
 
 def sgd(params, lr=0.1):
-  'not implemented'
+  """
+  Implements stochastic gradient descent. For each param, subtract the gradient times the learning rate.
+  The gradient for each param is stored in param.grad. After updating each param, set its gradient to zero.
+
+  :param params: a list of parameters to update.
+  :param lr: the learning rate.
+
+  :return: None
+  """
+  
+  with torch.no_grad():
+    for item in params:
+      item -= lr*item.grad
+      item.grad.zero_()
 
 
 
 def train(net, params, train_iter, loss_func=cross_entropy, updater=sgd):
-  'not implemented'
+  """
+  Implements training loop as described in the 5 steps above.
+
+  :param net: the neural network.
+  :param params: the parameters of the neural network.
+  :param train_iter: the training data iterator.
+  :param loss_func: the loss function.
+  :param updater: the function that updates the gradients.
+
+  :return: None
+  """
+  
+  for x, y in train_iter:
+    y_hat = net(x) 
+    loss = loss_func(y_hat, y).mean() 
+    updater(params) 
 
 \end{lstlisting}
 
-    \item[2.]
+    \item[2.] From the plot, we observe an inverse relationship between loss and accuracy for both training and testing phases; as the loss decreases, the accuracy increases, which is a typical expectation in model training. The training phase shows a pronounced improvement after the first epoch, evidenced by a steep decline in loss and a sharp increase in accuracy. Both loss and accuracy plots for the test data demonstrate a smooth, steady trend, suggesting a consistent model evaluation performance over epochs. Notably, the magnitude of change between epochs is more pronounced for accuracy than for loss, especially between epochs 0 and 1, where accuracy undergoes a more significant shift compared to loss.
 
-    \item[3.]
+    \item[3.] 
 
-      Test Accuracy (In Distribution):
+      Test Accuracy (In Distribution): 0.9963235294117647
 
-      Test Accuracy (Out of Distribution):
+      Test Accuracy (Out of Distribution): 0.0 
 
-      Discussion:
+      Discussion: The notable discrepancy between in-distribution and out-of-distribution test accuracies is immediately apparent; the model achieves near-perfect accuracy on data similar to what it was trained on, with an accuracy score around 0.996. However, its performance on out-of-distribution data falls to zero, indicating a lack of generalization and an inability to correctly classify unfamiliar data. This stark contrast highlights the model's specialization but also underscores its limitations in dealing with novel data scenarios.
 
-    \item[4.]
+    \item[4.] The utility of predictive uncertainties is twofold; they can signal confidence in familiar scenarios and raise flags when encountering unknown data. Uncertainties that are too low may falsely show the use of model outputs, even when incorrect, whereas high uncertainties for OOD inputs can beneficially alert us to instances where the model is faulty. However, when uncertainties are excessively conservative, they might lead to an overabundance of false alerts, which can be counterproductive.
+    
+    As discussed in HW2, employing strategies such as bootstrapping and training ensemble models could enhance the model's ability to generalize and more accurately assess uncertainties. These methods aggregate diverse perspectives from multiple models, providing a more robust understanding of data variability and prediction confidence. This comes at the expense of increased computational resources, and the trade-off between improved performance and cost must be carefully considered. This has been and will remain a fundamental duality in ML. 
 
     \item[5.]
 
       \begin{enumerate}
-        \item
-        \item
-        \item
+        \item Adversaries could alter the scanner calibration or introduce visual artifacts to mislead the model, effectively conducting a hardware attack to misroute mail. Implementing random checks with known outcomes can detect tampering, but may not catch sophisticated manipulations and adds operational complexity.
+        
+        \item In an input attack, adversaries might physically alter the envelope's appearance to deceive the model. Stricter access controls and verification of mail content against a secure database can reduce risk but may slow down processing and add logistical challenges.
+
+        \item Social engineering attacks could corrupt the model by influencing the maintenance team to introduce biased data. Rigorous personnel vetting and continuous education on security practices can mitigate risks, but may limit team size and slow down innovation, potentially creating a distrustful work environment.
+
       \end{enumerate}
 
 
